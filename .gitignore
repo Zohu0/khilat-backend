@@ -38,7 +38,8 @@ Thumbs.db
 application-local.properties
 application-prod.properties
 application-dev.properties
-
+# Optional: Ignore properties with secrets (see step 3)
+# src/main/resources/application.properties
 # ========================
 # Temp / Cache
 # ========================
