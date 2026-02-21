@@ -32,10 +32,10 @@ public class ProductService {
 	private ProductRepo productRepo;
 	
 	 @Autowired
-	    private CategoryRepo categoryRepo;
+	  private CategoryRepo categoryRepo;
 	 
 	 @Autowired
-	    private ProductImageService productImageService;
+	  private ProductImageService productImageService;
 	
 	
 	@Transactional(readOnly = true)
@@ -65,13 +65,11 @@ public class ProductService {
     	response.setCategory(product.getCategory());
     	response.setCategoryId(product.getCategory().getId());
     	response.setDescription(product.getDescription());
-    	response.setName(product.getDescription());
+    	response.setName(product.getName());
     	response.setPrice(product.getPrice());
     	response.setStock(product.getStock());
     	response.setTrending(product.getTrending());
     	response.setProductImages(product.getProductImages());
-    	
-    	
     	
     	return response;
     }

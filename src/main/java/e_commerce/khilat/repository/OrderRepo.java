@@ -7,5 +7,8 @@ import e_commerce.khilat.entity.Order;
 
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Long> {
+	
+	
+	
 
 }

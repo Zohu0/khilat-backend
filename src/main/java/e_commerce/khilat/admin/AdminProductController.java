@@ -11,17 +11,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import e_commerce.khilat.controller.ProductController;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import e_commerce.khilat.dtomodels.ProductRequest;
 import e_commerce.khilat.entity.Product;
 import e_commerce.khilat.service.ProductService;
-import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/admin")
