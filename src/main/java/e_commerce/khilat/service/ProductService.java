@@ -181,6 +181,15 @@ public class ProductService {
 
          return productRepo.save(product);
      }
+     
+     @Transactional
+     public void deleteProduct(Long productId) {
+
+         Product product = productRepo.findById(productId)
+                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+         productRepo.delete(product);  
+     }
 
 }
 
