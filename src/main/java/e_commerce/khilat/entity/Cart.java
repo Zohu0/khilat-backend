@@ -15,7 +15,15 @@ public class Cart {
     @Column(name = "guest_id", nullable = false, unique = true)
     private UUID guestId;
     
-    @Column(name = "created_at")
+    public UUID getGuestId() {
+		return guestId;
+	}
+
+	public void setGuestId(UUID guestId) {
+		this.guestId = guestId;
+	}
+
+	@Column(name = "created_at")
     private LocalDateTime createdAt;
 
 	public Long getId() {
