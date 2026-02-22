@@ -4,7 +4,9 @@ public class CheckoutResponse {
 	
 	
     private String clientSecret;
+    
     private Long amount;
+    
 	public String getClientSecret() {
 		return clientSecret;
 	}

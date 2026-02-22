@@ -1,5 +1,6 @@
 package e_commerce.khilat.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,7 +75,7 @@ public class OrderService {
 	        orderItem.setOrder(order);
 	        orderItem.setProduct(product);
 	        orderItem.setQuantity(cartItem.getQuantity());
-	        orderItem.setPrice(cartItem.getPrice());
+	        orderItem.setPrice(cartItem.getPrice().multiply(new BigDecimal(cartItem.getQuantity())));
 	        orderItemRepository.save(orderItem);
 	    }
 
