@@ -1,14 +1,27 @@
 package e_commerce.khilat.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import e_commerce.khilat.admin.JwtAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
+	
+	private final JwtAuthenticationFilter jwtFilter;
+	
+	  public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+	        this.jwtFilter = jwtFilter;
+	    }
+
 
     // ✅ Password Encoder
     @Bean
@@ -23,12 +36,14 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/api/admin/login").permitAll()
+                .requestMatchers("/api/stripe/webhook").permitAll()
+                .requestMatchers("/api/admin/**").authenticated()
                 .anyRequest().permitAll()
             )
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .formLogin(form -> form.disable());
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }

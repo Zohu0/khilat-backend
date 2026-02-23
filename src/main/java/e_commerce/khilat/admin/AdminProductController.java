@@ -2,6 +2,7 @@ package e_commerce.khilat.admin;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +40,35 @@ public class AdminProductController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	@PostMapping("/login")
-	public ResponseEntity<User> login(@RequestBody User user) {
-		return ResponseEntity.ok(userService.login(user.getEmail(), user.getPassword()));
+	public ResponseEntity<?> login(@RequestBody User user) {
+
+	    User loggedInUser =
+	            userService.login(user.getEmail(), user.getPassword());
+
+	    String token = jwtUtil.generateToken(loggedInUser.getEmail());
+
+	    return ResponseEntity.ok(
+	            Map.of(
+	                "token", token,
+	                "message", "Admin login successful"
+	            )
+	    );
 	}
+	
+	
 
 	@PostMapping("/signup")
 	public ResponseEntity<User> signup(@RequestBody User user) {
 		return ResponseEntity.ok(userService.register(user));
 	}
+	
+	
+	
 
 	@PostMapping(value = "/addproducts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Product> createProductWithImages(@RequestPart("product") String productJson,
@@ -66,6 +86,8 @@ public class AdminProductController {
 
 		return ResponseEntity.ok(productService.createProductWithImages(request, images));
 	}
+	
+	
 
 	@PostMapping(value = "/updateproduct/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Product> updateProductWithImages(@PathVariable Long productId,
@@ -85,6 +107,9 @@ public class AdminProductController {
 
 		return ResponseEntity.ok(updated);
 	}
+	
+	
+	
 	
 	@DeleteMapping("/deleteproduct/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long productId) {

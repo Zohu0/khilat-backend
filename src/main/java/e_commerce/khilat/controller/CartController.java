@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import e_commerce.khilat.dtomodels.AddToCartRequest;
 import e_commerce.khilat.entity.CartItem;
+import e_commerce.khilat.entity.User;
 import e_commerce.khilat.service.CartService;
+import e_commerce.khilat.service.UserService;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -27,6 +29,9 @@ public class CartController {
 
 	@Autowired
 	private  CartService cartservice;
+	
+	@Autowired
+	private  UserService userService;
 
 	
 	// 1. Add item to cart
@@ -47,6 +52,12 @@ public class CartController {
         List<CartItem> items = cartservice.getCartItems(guestId);
         return ResponseEntity.ok(items);
     }
+    
+    
+	@PostMapping("/signup")
+	public ResponseEntity<User> signup(@RequestBody User user) {
+		return ResponseEntity.ok(userService.register(user));
+	}
     
     
 

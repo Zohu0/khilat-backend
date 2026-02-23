@@ -1,5 +1,6 @@
 package e_commerce.khilat.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ public class UserService {
 	
 	
 	
-	
 	public User login(String email, String password) {
 
         User user = userRepo.findByEmail(email)
@@ -33,19 +33,7 @@ public class UserService {
         return user;
     }
 	
-	// SIGNUP
-    public User register(User user) {
 
-        Optional<User> existingUser = userRepo.findByEmail(user.getEmail());
-
-        if (existingUser.isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        return userRepo.save(user);
-    }
     
     
 

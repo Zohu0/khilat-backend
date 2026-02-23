@@ -20,6 +20,8 @@ import e_commerce.khilat.repository.PaymentRepo;
 
 @Service
 public class CheckoutService {
+	
+	
 
     private final CartRepo cartRepo;
     
@@ -43,7 +45,11 @@ public class CheckoutService {
     }
     
     
+    
+    
     public CheckoutResponse createPaymentIntent(CheckoutRequest request) throws StripeException {
+    	
+    	
 
         // 1️⃣ Fetch cart
         Cart cart = cartRepo.findByGuestId(request.getGuestId())
@@ -66,13 +72,19 @@ public class CheckoutService {
         }
 
         long amountInPaise = totalAmount.multiply(BigDecimal.valueOf(100)).longValue();
+        
+
+        Long amount = Long.valueOf(amountInPaise);
+        String currency = request.getCurrency();
+        String guestId = (request.getGuestId() != null) ? request.getGuestId().toString() : "anonymous";
+        
 
         // 4️⃣ Create Stripe PaymentIntent
         PaymentIntent paymentIntent = stripePaymentService.createPaymentIntent(
-                amountInPaise,
-                request.getCurrency(),
-                request.getGuestId().toString()
-        );
+        	    amount, 
+        	    currency, 
+        	    guestId
+        	);
 
         // 5️⃣ Save Payment record (CREATED)
         Payment payment = new Payment();
