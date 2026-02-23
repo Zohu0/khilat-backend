@@ -13,6 +13,7 @@ import e_commerce.khilat.dtomodels.CheckoutRequest;
 import e_commerce.khilat.dtomodels.CheckoutResponse;
 import e_commerce.khilat.entity.Cart;
 import e_commerce.khilat.entity.CartItem;
+import e_commerce.khilat.entity.Order;
 import e_commerce.khilat.entity.Payment;
 import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.repository.CartRepo;
@@ -95,6 +96,16 @@ public class CheckoutService {
         payment.setCreatedAt(LocalDateTime.now());
 
         paymentRepo.save(payment);
+        
+        Order order = new Order();
+        order.setGuestId(request.getGuestId());
+        order.setAddress(request.getAddress()); 
+        order.setEmail(request.getEmail());
+        order.setName(request.getName());
+        order.setPhone(request.getPhone());
+        
+        
+        
 
         // 6️⃣ Response
         CheckoutResponse response = new CheckoutResponse();

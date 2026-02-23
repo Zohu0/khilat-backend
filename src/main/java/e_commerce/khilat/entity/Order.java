@@ -18,8 +18,38 @@ public class Order {
     
     private String email;
     
+    private String name;
+    
+    private String address;
+    
+    private Long phone;
+    
 
-    public UUID getGuestId() {
+    public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public Long getPhone() {
+		return phone;
+	}
+
+	public void setPhone(Long phone) {
+		this.phone = phone;
+	}
+
+	public UUID getGuestId() {
 		return guestId;
 	}
 

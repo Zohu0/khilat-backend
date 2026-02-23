@@ -53,11 +53,7 @@ public class CartController {
         return ResponseEntity.ok(items);
     }
     
-    
-	@PostMapping("/signup")
-	public ResponseEntity<User> signup(@RequestBody User user) {
-		return ResponseEntity.ok(userService.register(user));
-	}
+   
     
     
 
