@@ -25,8 +25,6 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
 	List<Product> findTrendingProducts(Pageable pageable);
 	
 	
-
-	
 	
 	
 }

@@ -11,8 +11,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -22,18 +24,23 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import e_commerce.khilat.dtomodels.ProductRequest;
+import e_commerce.khilat.entity.Category;
 import e_commerce.khilat.entity.Product;
 import e_commerce.khilat.entity.User;
+import e_commerce.khilat.service.CategoryService;
 import e_commerce.khilat.service.ProductService;
 import e_commerce.khilat.service.UserService;
 
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin
-
 public class AdminProductController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AdminProductController.class);
+	
+	
+	 @Autowired
+	 private  CategoryService categoryService;
 
 	@Autowired
 	private ProductService productService;
@@ -118,5 +125,42 @@ public class AdminProductController {
 
         return ResponseEntity.ok("Product deleted successfully");
     }
+	
+	@GetMapping("/getallproducts")
+	public ResponseEntity<List<Product>> getAllProduct() {
+		LOGGER.info("Fetching all products");
+		List<Product> products = productService.getAllProducts();
+		
+		if (products.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		
+		return ResponseEntity.ok(products);
+	}
+	
+	  
+
+	    @PostMapping("/addCategory")
+	    public Category addCategory(@RequestBody Category category) {
+	        return categoryService.addCategory(category);
+	    }
+
+	    @PostMapping("/bulk")
+	    public List<Category> addMultipleCategories(@RequestBody List<Category> categories) {
+	        return categoryService.addMultipleCategories(categories);
+	    }
+	    
+	    @PutMapping("/updateCategory/{id}")
+	    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+	        Category updatedCategory = categoryService.updateCategory(id, category);
+	        return ResponseEntity.ok(updatedCategory);
+	    }
+
+	    @DeleteMapping("/deleteCategory/{id}")
+	    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
+	        categoryService.deleteCategory(id);
+	        return ResponseEntity.ok("Category deleted successfully with id: " + id);
+	    }
+	
 
 }

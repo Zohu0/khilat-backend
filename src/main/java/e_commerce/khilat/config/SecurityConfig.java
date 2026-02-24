@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 import e_commerce.khilat.admin.JwtAuthenticationFilter;
 
@@ -32,11 +33,13 @@ public class SecurityConfig {
    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
+            .cors(Customizer.withDefaults()) // 1. Enable CORS support
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/admin/login").permitAll()
+                // 2. Explicitly permit OPTIONS requests for all paths
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() 
+                .requestMatchers("/api/admin/login","/api/admin/signup").permitAll()
                 .requestMatchers("/api/stripe/webhook").permitAll()
                 .requestMatchers("/api/admin/**").authenticated()
                 .anyRequest().permitAll()

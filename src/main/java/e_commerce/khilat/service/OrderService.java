@@ -1,6 +1,7 @@
 package e_commerce.khilat.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,10 +60,11 @@ public class OrderService {
 
 	    List<CartItem> cartItems = cartItemRepository.findByCart(cart);
 
-	    // 4. Create Order (The Order table DOES have guest_id)
-	    Order order = new Order();
-	    order.setGuestId(guestId);
-	    order.setEmail("guest@email.com");
+	    
+	    Order order = orderRepository.findByguestId(guestId);
+	    order.setCreatedAt(LocalDateTime.now());
+	    order.setStatus("PENDING");
+	    order.setTotalAmount(payment.getAmount());
 	    order = orderRepository.save(order);
 
 	    // 5. Create Order Items & Update Stock

@@ -39,7 +39,7 @@ public class CartController {
     public ResponseEntity<String> addToCart(@RequestBody AddToCartRequest request) {
         try {
         	UUID guestId = request.getGuestId();
-        	System.out.println(guestId);
+//        	System.out.println(guestId);
         	cartservice.addToCart(request);
             return ResponseEntity.ok("Item added to cart successfully");
         } catch (Exception e) {

@@ -190,6 +190,18 @@ public class ProductService {
 
          productRepo.delete(product);  
      }
+     
+     public List<Product> getAllProducts() {
+         LOGGER.debug("Requesting all products from database");
+         
+         // Fetch all products using JpaRepository's built-in method
+         List<Product> products = productRepo.findAll();
+         
+         // Optional: Perform any mapping or URI building for product images here 
+         // if your frontend needs full URLs for the images.
+         
+         return products;
+     }
 
 }
 

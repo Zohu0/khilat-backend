@@ -2,6 +2,8 @@ package e_commerce.khilat.controller;
 
 import e_commerce.khilat.entity.Category;
 import e_commerce.khilat.service.CategoryService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,25 +12,14 @@ import java.util.List;
 @RequestMapping("/api/categories")
 @CrossOrigin
 public class CategoryController {
+	
 
-    private final CategoryService categoryService;
+	 @Autowired
+	 private  CategoryService categoryService;
 
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
-
-    @GetMapping
+	@GetMapping("getAllCategories")
     public List<Category> getAllCategories() {
         return categoryService.getAllCategories();
     }
 
-    @PostMapping
-    public Category addCategory(@RequestBody Category category) {
-        return categoryService.addCategory(category);
-    }
-
-    @PostMapping("/bulk")
-    public List<Category> addMultipleCategories(@RequestBody List<Category> categories) {
-        return categoryService.addMultipleCategories(categories);
-    }
 }

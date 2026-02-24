@@ -12,4 +12,14 @@ public interface CategoryService {
     List<Category> addMultipleCategories(List<Category> categories);
 
     List<Category> getAllCategories();
+    
+    Category updateCategory(Long id, Category category);
+
+    void deleteCategory(Long id);
+    
+    
+    
+    
+    
+    
 }
