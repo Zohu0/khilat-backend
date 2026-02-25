@@ -3,10 +3,13 @@ package e_commerce.khilat.admin;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -80,6 +83,7 @@ public class AdminProductController {
 	@PostMapping(value = "/addproducts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Product> createProductWithImages(@RequestPart("product") String productJson,
 			@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
+		
 		System.out.println("process started of saving product with image");
 		LOGGER.debug("process started of saving product with image");
 
@@ -127,18 +131,22 @@ public class AdminProductController {
     }
 	
 	@GetMapping("/getallproducts")
-	public ResponseEntity<List<Product>> getAllProduct() {
-		LOGGER.info("Fetching all products");
-		List<Product> products = productService.getAllProducts();
-		
-		if (products.isEmpty()) {
-			return ResponseEntity.noContent().build();
-		}
-		
-		return ResponseEntity.ok(products);
+	public ResponseEntity<Page<Product>> getAllProduct(
+	    @PageableDefault(size = 10, page = 0) Pageable pageable) {
+	    
+	    LOGGER.info("Fetching products - Page: {}, Size: {}", 
+	                pageable.getPageNumber(), pageable.getPageSize());
+	                
+	    Page<Product> productPage = productService.getAllProducts(pageable);
+	    
+	    if (productPage.isEmpty()) {
+	        return ResponseEntity.noContent().build();
+	    }
+	    
+	    return ResponseEntity.ok(productPage);
 	}
-	
 	  
+
 
 	    @PostMapping("/addCategory")
 	    public Category addCategory(@RequestBody Category category) {

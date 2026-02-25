@@ -17,6 +17,7 @@ import e_commerce.khilat.entity.Order;
 import e_commerce.khilat.entity.Payment;
 import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.repository.CartRepo;
+import e_commerce.khilat.repository.OrderRepo;
 import e_commerce.khilat.repository.PaymentRepo;
 
 @Service
@@ -31,17 +32,21 @@ public class CheckoutService {
     private final PaymentRepo paymentRepo;
     
     private final StripePaymentService stripePaymentService;
+    
+    private final OrderRepo orderRepo;
 
     public CheckoutService(
             CartRepo cartRepo,
             CartItemRepo cartItemRepo,
             PaymentRepo paymentRepo,
+            OrderRepo orderRepo,
         StripePaymentService stripePaymentService) {
 
         this.cartRepo = cartRepo;
         this.cartItemRepo = cartItemRepo;
         this.paymentRepo = paymentRepo;
         this.stripePaymentService = stripePaymentService;
+        this.orderRepo =  orderRepo;
         
     }
     
@@ -103,6 +108,10 @@ public class CheckoutService {
         order.setEmail(request.getEmail());
         order.setName(request.getName());
         order.setPhone(request.getPhone());
+        
+        orderRepo.save(order);
+        
+        
         
         
         

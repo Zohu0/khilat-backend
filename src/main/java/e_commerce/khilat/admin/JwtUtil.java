@@ -18,7 +18,7 @@ public class JwtUtil {
     // 2. Convert it to a SecretKey object that all methods can "see"
     private final SecretKey ALGO_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
 
-    private static final long EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
+    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 hour
 
     public String generateToken(String email) {
         return Jwts.builder()

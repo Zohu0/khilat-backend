@@ -25,6 +25,9 @@ public class Order {
     private Long phone;
     
 
+    private String status;
+    
+
     public String getName() {
 		return name;
 	}
@@ -68,7 +71,6 @@ public class Order {
 	@Column(name = "total_amount")
     private BigDecimal totalAmount;
 
-    private String status;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

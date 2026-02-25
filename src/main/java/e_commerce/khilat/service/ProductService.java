@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import e_commerce.khilat.controller.ProductController;
 import e_commerce.khilat.dtomodels.ProductRequest;
@@ -191,17 +193,11 @@ public class ProductService {
          productRepo.delete(product);  
      }
      
-     public List<Product> getAllProducts() {
-         LOGGER.debug("Requesting all products from database");
-         
-         // Fetch all products using JpaRepository's built-in method
-         List<Product> products = productRepo.findAll();
-         
-         // Optional: Perform any mapping or URI building for product images here 
-         // if your frontend needs full URLs for the images.
-         
-         return products;
-     }
+     public Page<Product> getAllProducts(Pageable pageable) {
+    	    LOGGER.debug("Requesting page of products from database");
+    	    // findAll(Pageable) is a built-in JpaRepository method
+    	    return productRepo.findAll(pageable);
+    	}
 
 }
 

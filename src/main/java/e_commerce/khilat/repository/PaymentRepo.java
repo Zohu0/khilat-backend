@@ -11,5 +11,7 @@ import e_commerce.khilat.entity.Payment;
 public interface PaymentRepo extends JpaRepository<Payment, Long>{
 	
 	Optional<Payment> findByTransactionId(String transactionId);
+	
+	Optional<Payment> findByOrderId(Long orderId);
 
 }
