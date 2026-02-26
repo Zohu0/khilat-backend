@@ -1,9 +1,11 @@
 package e_commerce.khilat.admin;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -131,20 +134,21 @@ public class AdminProductController {
     }
 	
 	@GetMapping("/getallproducts")
-	public ResponseEntity<Page<Product>> getAllProduct(
-	    @PageableDefault(size = 10, page = 0) Pageable pageable) {
-	    
-	    LOGGER.info("Fetching products - Page: {}, Size: {}", 
-	                pageable.getPageNumber(), pageable.getPageSize());
-	                
-	    Page<Product> productPage = productService.getAllProducts(pageable);
-	    
-	    if (productPage.isEmpty()) {
-	        return ResponseEntity.noContent().build();
+	 public ResponseEntity<Page<Product>> getProducts(
+	            @RequestParam(required = false) String keyword,
+	            @RequestParam(required = false) String category,
+	            @RequestParam(required = false) BigDecimal minPrice,
+	            @RequestParam(required = false) BigDecimal maxPrice,
+	            @RequestParam(defaultValue = "0") int page,
+		        @RequestParam(defaultValue = "10") int size) {
+
+			Pageable pageable = PageRequest.of(page, size);
+	        Page<Product> result =
+	                productService.filterProducts(
+	                        keyword, category, minPrice, maxPrice, pageable);
+
+	        return ResponseEntity.ok(result);
 	    }
-	    
-	    return ResponseEntity.ok(productPage);
-	}
 	  
 
 

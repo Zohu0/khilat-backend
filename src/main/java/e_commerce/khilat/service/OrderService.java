@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.stripe.model.PaymentIntent;
@@ -28,7 +29,14 @@ import jakarta.transaction.Transactional;
 
 import e_commerce.khilat.dtomodels.OrderDto;
 import e_commerce.khilat.dtomodels.OrderItemDto;
+import e_commerce.khilat.dtomodels.OrderSummaryDto;
 import e_commerce.khilat.dtomodels.PaymentDto;
+import e_commerce.khilat.dtomodels.ProductSummaryDto;
+
+import org.springframework.data.domain.Pageable;
+
+
+
 
 @Service
 public class OrderService {
@@ -167,6 +175,35 @@ public class OrderService {
 	    return response; // Return the populated DTO
 	}
 	
+	
+	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable) {
+
+	    Page<Order> ordersPage = orderRepository.findAll(pageable);
+
+	    return ordersPage.map(order -> {
+
+	        OrderSummaryDto dto = new OrderSummaryDto();
+	        dto.setOrderId(order.getId());
+	        dto.setName(order.getName());
+	        dto.setPhone(order.getPhone());
+	        dto.setAmount(order.getTotalAmount());
+	        dto.setOrderStatus(order.getStatus());
+	        dto.setCreatedAt(order.getCreatedAt());
+
+	        Payment payment = paymentRepository
+	                .findByOrderId(order.getId())
+	                .orElse(null);
+
+	        if (payment != null) {
+	            dto.setPaymentStatus(payment.getStatus());
+	        } else {
+	            dto.setPaymentStatus("PENDING");
+	        }
+
+	        return dto;
+	    });
+	}
+
 	
 
 }

@@ -1,5 +1,6 @@
 package e_commerce.khilat.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -193,11 +194,28 @@ public class ProductService {
          productRepo.delete(product);  
      }
      
-     public Page<Product> getAllProducts(Pageable pageable) {
-    	    LOGGER.debug("Requesting page of products from database");
-    	    // findAll(Pageable) is a built-in JpaRepository method
-    	    return productRepo.findAll(pageable);
-    	}
+     public Page<Product> filterProducts(
+             String keyword,
+             String category,
+             BigDecimal minPrice,
+             BigDecimal maxPrice,
+             Pageable pageable) {
+
+         // Case 1: sab null → simple pagination
+         if (keyword == null && category == null
+                 && minPrice == null && maxPrice == null) {
+             return productRepo.findAll(pageable);
+         }
+
+         // Case 2: filters applied
+         return productRepo.filterProducts(
+                 keyword,
+                 category,
+                 minPrice,
+                 maxPrice,
+                 pageable
+         );
+     }
 
 }
 

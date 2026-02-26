@@ -25,7 +25,7 @@ public class OrderDto {
 	
 	private List<OrderItemDto> items;
 	
-	private List<OrderDto> orderItem; 
+	
     
     public LocalDateTime getCreatedAt() {
 		return createdAt;

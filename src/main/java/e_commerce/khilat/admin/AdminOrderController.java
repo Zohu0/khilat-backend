@@ -7,10 +7,16 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import e_commerce.khilat.dtomodels.OrderDto;
+import e_commerce.khilat.dtomodels.OrderSummaryDto;
+import e_commerce.khilat.dtomodels.ProductSummaryDto;
 import e_commerce.khilat.service.OrderService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -39,6 +45,20 @@ public class AdminOrderController {
 	                .body("An unexpected error occurred: " + e.getMessage());
 	    }
 	}
+	
+	@GetMapping("/order-summary")
+	public ResponseEntity<Page<OrderSummaryDto>> getAllOrderSummaries(
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size) {
+
+	    Pageable pageable = PageRequest.of(page, size);
+	    Page<OrderSummaryDto> result =
+	            orderService.getOrderSummariesForAdmin(pageable);
+
+	    return ResponseEntity.ok(result);
+	}
+	
+
 	
 	
 
