@@ -56,6 +56,31 @@ public class CartService {
             cartItemRepository.save(newItem);
         }
     }
+    
+    @Transactional
+    public void increaseQuantity(Long cartItemId) {
+
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        item.setQuantity(item.getQuantity() + 1);
+
+        cartItemRepository.save(item);
+    }
+    
+    @Transactional
+    public void decreaseQuantity(Long cartItemId) {
+
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (item.getQuantity() <= 1) {
+            cartItemRepository.delete(item); // item removed from cart
+        } else {
+            item.setQuantity(item.getQuantity() - 1);
+            cartItemRepository.save(item);
+        }
+    }
 
     public List<CartItem> getCartItems(UUID guestId) {
         return cartRepository.findByGuestId(guestId)

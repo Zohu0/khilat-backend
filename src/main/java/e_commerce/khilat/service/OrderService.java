@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ import e_commerce.khilat.repository.OrderItemRepo;
 import e_commerce.khilat.repository.OrderRepo;
 import e_commerce.khilat.repository.PaymentRepo;
 import e_commerce.khilat.repository.ProductRepo;
+import e_commerce.khilat.util.CommonConstant;
 import jakarta.transaction.Transactional;
 
 import e_commerce.khilat.dtomodels.OrderDto;
@@ -35,11 +37,22 @@ import e_commerce.khilat.dtomodels.ProductSummaryDto;
 
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.SimpleMailMessage; // Iski bhi zaroorat padegi
+
 
 
 
 @Service
 public class OrderService {
+	
+	@Autowired
+    private JavaMailSender mailSender;
+
+    // application.properties se username uthane ke liye
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+	
 	@Autowired
 	private PaymentRepo paymentRepository;
 	@Autowired
@@ -79,7 +92,8 @@ public class OrderService {
 		List<CartItem> cartItems = cartItemRepository.findByCart(cart);
 
 		Order order = orderRepository.findByguestId(guestId);
-
+		
+		
 		order.setCreatedAt(LocalDateTime.now());
 
 		order.setStatus("PENDING");
@@ -87,6 +101,9 @@ public class OrderService {
 		order.setTotalAmount(payment.getAmount());
 
 		order = orderRepository.save(order);
+		
+		
+
 
 		// 5. Create Order Items & Update Stock
 		for (CartItem cartItem : cartItems) {
@@ -104,14 +121,52 @@ public class OrderService {
 
 		// 6. Finalize Payment in DB
 		payment.setOrder(order); // Now you link them!
-		payment.setStatus("SUCCESS");
+		payment.setStatus(CommonConstant.SUCCESS);
 		paymentRepository.save(payment);
+		
+		System.out.println("status of pmt : " + payment.getStatus());
+		
+		
+		String guestEmail = order.getEmail();
+		String guestName = order.getName();
+		
+		sendEmailtoGuest(guestEmail, guestName);
+		
 
 		// 7. Cleanup
 		cartItemRepository.deleteAll(cartItems);
 		cartRepository.delete(cart);
 	}
 	
+	
+	public void sendEmailtoGuest(String guestEmail, String guestName) {
+	    try {
+	        SimpleMailMessage message = new SimpleMailMessage();
+	        
+	        System.out.println("senders email:  " + fromEmail);
+	        
+	        // 1. Kis email account se mail jayega (aapki application.properties wali email)
+	        message.setFrom(fromEmail); 
+	        
+	        System.out.println("rcvrs email:  " + guestEmail);
+	        // 2. Customer ka email (order entity se fetch kiya hua)
+	        message.setTo(guestEmail); 
+	        
+	        message.setSubject("Order Confirmation - Khilat Store 🎉");	        
+	        String emailContent = "Hi " + (guestName != null ? guestName : "Customer") + ",\n\n" +
+	        		CommonConstant.EmailMessage;
+	                              
+	        message.setText(emailContent);
+
+	        mailSender.send(message);
+	        
+	        System.out.println("message : " + message);
+	        System.out.println("Confirmation email sent to: " + guestEmail);
+	    } catch (Exception e) {
+	        // Sirf log karein taaki email fail hone par transaction roll back na ho
+	        System.err.println("Error sending email: " + e.getMessage());
+	    }
+	}
 	
 	
 	
@@ -177,11 +232,10 @@ public class OrderService {
 	
 	
 	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable) {
-
-	    Page<Order> ordersPage = orderRepository.findAll(pageable);
+	    // Yahan humne filter laga diya
+	    Page<Order> ordersPage = orderRepository.findByStatus("PENDING", pageable);
 
 	    return ordersPage.map(order -> {
-
 	        OrderSummaryDto dto = new OrderSummaryDto();
 	        dto.setOrderId(order.getId());
 	        dto.setName(order.getName());
@@ -190,6 +244,7 @@ public class OrderService {
 	        dto.setOrderStatus(order.getStatus());
 	        dto.setCreatedAt(order.getCreatedAt());
 
+	        // Payment check logic (Same as before)
 	        Payment payment = paymentRepository
 	                .findByOrderId(order.getId())
 	                .orElse(null);
@@ -202,6 +257,69 @@ public class OrderService {
 
 	        return dto;
 	    });
+	}
+	
+	public Page<OrderSummaryDto> getDispatchedOrderSummaries(Pageable pageable) {
+	    // Sirf DISPATCHED status wale orders fetch karega
+	    Page<Order> ordersPage = orderRepository.findByStatus("DISPATCHED", pageable);
+
+	    return ordersPage.map(order -> {
+	        OrderSummaryDto dto = new OrderSummaryDto();
+	        dto.setOrderId(order.getId());
+	        dto.setName(order.getName());
+	        dto.setPhone(order.getPhone());
+	        dto.setAmount(order.getTotalAmount());
+	        dto.setOrderStatus(order.getStatus());
+	        dto.setCreatedAt(order.getCreatedAt());
+
+	        // Payment status fetch logic
+	        paymentRepository.findByOrderId(order.getId())
+	            .ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+
+	        return dto;
+	    });
+	}
+	
+	@Transactional
+	public void markOrderAsDispatched(Long orderId) {
+	    // 1. Order ko DB se find karein
+	    Order order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+	    // 2. Status update karein
+	    order.setStatus("DISPATCHED");
+	    orderRepository.save(order);
+
+	    // 3. User ko Dispatch ka email bhejein
+	    sendDispatchEmail(order.getEmail(), order.getName(), order.getId());
+	}
+
+	private void sendDispatchEmail(String guestEmail, String guestName, Long orderId) {
+	    try {
+	        SimpleMailMessage message = new SimpleMailMessage();
+	        message.setFrom(fromEmail);
+	        message.setTo(guestEmail);
+	        message.setSubject("Great News! Your Order #" + orderId + " is Dispatched 🚚");
+
+	        // 1. Check for null and use 'guestName' (the parameter)
+	        String displayName = (guestName != null) ? guestName : "Customer";
+
+	        // 2. Define the template and the content string
+	        String template = "Hi %s,\n\nAapka order #%s dispatch ho gaya hai aur raste mein hai! 📦\n" +
+	                          "Jald hi aapko ye mil jayega.\n\n" +
+	                          "Thank you for shopping with Khilat!\n" +
+	                          "Best Regards,\nKhilat Team";
+	        
+	        String content = String.format(template, displayName, orderId);
+
+	        // 3. Set the text to the message
+	        message.setText(content);
+
+	        mailSender.send(message);
+	        System.out.println("Dispatch email sent to: " + guestEmail);
+	    } catch (Exception e) {
+	        System.err.println("Dispatch email fail hui: " + e.getMessage());
+	    }
 	}
 
 	

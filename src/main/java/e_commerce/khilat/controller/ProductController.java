@@ -7,12 +7,16 @@ import e_commerce.khilat.service.ProductService;
 
 import org.springframework.http.MediaType;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import e_commerce.khilat.dtomodels.ProductRequest;
 import e_commerce.khilat.entity.Product;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -73,6 +77,25 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch trending products");
 		}
 	}
+	
+	
+	@GetMapping("/getallproducts")
+	 public ResponseEntity<Page<Product>> getProducts(
+	            @RequestParam(required = false) String keyword,
+	            @RequestParam(required = false) String category,
+	            @RequestParam(required = false) BigDecimal minPrice,
+	            @RequestParam(required = false) BigDecimal maxPrice,
+	            @RequestParam(defaultValue = "0") int page,
+		        @RequestParam(defaultValue = "10") int size) {
+
+			Pageable pageable = PageRequest.of(page, size);
+	        Page<Product> result =
+	                productService.filterProducts(
+	                        keyword, category, minPrice, maxPrice, pageable);
+
+	        return ResponseEntity.ok(result);
+	    }
+	  
 	
 
 }
