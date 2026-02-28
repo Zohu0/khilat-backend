@@ -1,7 +1,9 @@
 package e_commerce.khilat.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -91,7 +93,10 @@ public class OrderService {
 
 		List<CartItem> cartItems = cartItemRepository.findByCart(cart);
 
-		Order order = orderRepository.findByguestId(guestId);
+//		Order order = orderRepository.findByguestId(guestId);
+		
+		Order order = orderRepository.findByPaymentId(payment.getId())
+				.orElseThrow(() -> new RuntimeException("Payment record not found"));
 		
 		
 		order.setCreatedAt(LocalDateTime.now());
@@ -143,12 +148,12 @@ public class OrderService {
 	    try {
 	        SimpleMailMessage message = new SimpleMailMessage();
 	        
-	        System.out.println("senders email:  " + fromEmail);
+//	        System.out.println("senders email:  " + fromEmail);
 	        
 	        // 1. Kis email account se mail jayega (aapki application.properties wali email)
 	        message.setFrom(fromEmail); 
 	        
-	        System.out.println("rcvrs email:  " + guestEmail);
+//	        System.out.println("rcvrs email:  " + guestEmail);
 	        // 2. Customer ka email (order entity se fetch kiya hua)
 	        message.setTo(guestEmail); 
 	        
@@ -160,8 +165,8 @@ public class OrderService {
 
 	        mailSender.send(message);
 	        
-	        System.out.println("message : " + message);
-	        System.out.println("Confirmation email sent to: " + guestEmail);
+//	        System.out.println("message : " + message);
+//	        System.out.println("Confirmation email sent to: " + guestEmail);
 	    } catch (Exception e) {
 	        // Sirf log karein taaki email fail hone par transaction roll back na ho
 	        System.err.println("Error sending email: " + e.getMessage());
@@ -170,7 +175,7 @@ public class OrderService {
 	
 	
 	
-	public OrderDto getOrderDetail(Long orderId) { // Changed void to OrderDto
+	public OrderDto getOrderDetail(Long orderId) { 
 
 	    Order order = orderRepository.findById(orderId)
 	            .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -231,9 +236,18 @@ public class OrderService {
 	}
 	
 	
-	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable) {
-	    // Yahan humne filter laga diya
-	    Page<Order> ordersPage = orderRepository.findByStatus("PENDING", pageable);
+	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable, LocalDate date) {
+		Page<Order> ordersPage;
+
+	    if (date != null) {
+	        // Range banana zaroori hai: Pure din ka data chahiye
+	        LocalDateTime start = date.atStartOfDay(); // 2026-02-28 00:00:00
+	        LocalDateTime end = date.atTime(LocalTime.MAX); // 2026-02-28 23:59:59
+	        
+	        ordersPage = orderRepository.findByStatusAndCreatedAtBetween("PENDING", start, end, pageable);
+	    } else {
+	        ordersPage = orderRepository.findByStatus("PENDING", pageable);
+	    }
 
 	    return ordersPage.map(order -> {
 	        OrderSummaryDto dto = new OrderSummaryDto();

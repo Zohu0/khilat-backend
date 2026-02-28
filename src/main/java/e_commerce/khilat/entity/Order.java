@@ -24,6 +24,9 @@ public class Order {
     
     private Long phone;
     
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id", referencedColumnName = "id")
+    private Payment payment;
 
     private String status;
     
@@ -105,6 +108,14 @@ public class Order {
 
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
+	}
+	
+	public Payment getPayment() {
+	    return payment;
+	}
+
+	public void setPayment(Payment payment) {
+	    this.payment = payment;
 	}
 
 	@Override

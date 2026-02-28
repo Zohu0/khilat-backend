@@ -2,6 +2,8 @@ package e_commerce.khilat.admin;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -10,15 +12,17 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
+	
+	private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; 
+	
+	private final SecretKey ALGO_KEY;
 
-    // 1. Define the raw string
-    private static final String SECRET_STRING = 
-            "this_is_a_very_secure_secret_key_which_is_32_chars_long";
     
-    // 2. Convert it to a SecretKey object that all methods can "see"
-    private final SecretKey ALGO_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
+    public JwtUtil(@Value("${jwt.secret}") String secretString) {
+        this.ALGO_KEY = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
+    }
 
-    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 hour
+    
 
     public String generateToken(String email) {
         return Jwts.builder()

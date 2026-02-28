@@ -1,6 +1,9 @@
 package e_commerce.khilat.repository;
 
 import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,10 +14,16 @@ import e_commerce.khilat.entity.Order;
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Long> {
 	
-	Order findByguestId(UUID guestId);
+//	<List>Order findByguestId(UUID guestId);
+	
+	<List>Order findByguestId(UUID guestId);
+	
+	Optional<Order> findByPaymentId(Long paymentId);
 	
 	Page<Order> findByStatus(String status, Pageable pageable);
 	
+	
+	Page<Order> findByStatusAndCreatedAtBetween(String status, LocalDateTime start, LocalDateTime end, Pageable pageable);	
 	
 	
 	

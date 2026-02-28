@@ -100,7 +100,7 @@ public class CheckoutService {
         payment.setAmount(totalAmount);
         payment.setCreatedAt(LocalDateTime.now());
 
-        paymentRepo.save(payment);
+        Payment savedPayment = paymentRepo.save(payment);    
         
         Order order = new Order();
         order.setGuestId(request.getGuestId());
@@ -108,6 +108,8 @@ public class CheckoutService {
         order.setEmail(request.getEmail());
         order.setName(request.getName());
         order.setPhone(request.getPhone());
+        
+        order.setPayment(savedPayment);
         
         orderRepo.save(order);
         

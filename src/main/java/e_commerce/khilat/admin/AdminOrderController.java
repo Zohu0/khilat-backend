@@ -1,6 +1,10 @@
 package e_commerce.khilat.admin;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +21,7 @@ import e_commerce.khilat.dtomodels.ProductSummaryDto;
 import e_commerce.khilat.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.data.domain.PageRequest;
 
 @RestController
@@ -50,11 +55,11 @@ public class AdminOrderController {
 	@GetMapping("/order-pending")
 	public ResponseEntity<Page<OrderSummaryDto>> getAllOrderSummaries(
 	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size) {
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-	    Pageable pageable = PageRequest.of(page, size);
-	    Page<OrderSummaryDto> result =
-	            orderService.getOrderSummariesForAdmin(pageable);
+	    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+	    Page<OrderSummaryDto> result = orderService.getOrderSummariesForAdmin(pageable, date);
 
 	    return ResponseEntity.ok(result);
 	}

@@ -37,15 +37,19 @@ public class StripeWebhookController {
     @PostMapping
     public ResponseEntity<String> handleWebhook(@RequestBody String payload,
                                                  @RequestHeader("Stripe-Signature") String sigHeader) {
+    	System.out.println("Inside webhook method");
         Event event;
 
         try {
             event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
+            System.out.println("Received Event: " + event.getType() + " ID: " + event.getId());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid signature");
         }
 
         if ("payment_intent.succeeded".equals(event.getType())) {
+        	
+        	System.out.println("Inside webhook execution");
             
             EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
             PaymentIntent intent = null;
