@@ -22,12 +22,14 @@ import e_commerce.khilat.entity.Order;
 import e_commerce.khilat.entity.OrderItem;
 import e_commerce.khilat.entity.Payment;
 import e_commerce.khilat.entity.Product;
+import e_commerce.khilat.entity.ProductVariant;
 import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.repository.CartRepo;
 import e_commerce.khilat.repository.OrderItemRepo;
 import e_commerce.khilat.repository.OrderRepo;
 import e_commerce.khilat.repository.PaymentRepo;
 import e_commerce.khilat.repository.ProductRepo;
+import e_commerce.khilat.repository.ProductVariantRepo;
 import e_commerce.khilat.util.CommonConstant;
 import jakarta.transaction.Transactional;
 
@@ -67,6 +69,8 @@ public class OrderService {
 	private OrderItemRepo orderItemRepository;
 	@Autowired
 	private ProductRepo productRepository;
+	@Autowired
+	private ProductVariantRepo productVariantRepo;
 	
 	@Autowired
 	private OrderItemRepo orderItemRepo;
@@ -111,17 +115,45 @@ public class OrderService {
 
 
 		// 5. Create Order Items & Update Stock
+//		for (CartItem cartItem : cartItems) {
+//			Product product = cartItem.getProduct();
+//			product.setStock(product.getStock() - cartItem.getQuantity());
+//			productRepository.save(product);
+//
+//			OrderItem orderItem = new OrderItem();
+//			orderItem.setOrder(order);
+//			orderItem.setProduct(product);
+//			orderItem.setQuantity(cartItem.getQuantity());
+//			orderItem.setPrice(cartItem.getPrice().multiply(new BigDecimal(cartItem.getQuantity())));
+//			orderItemRepository.save(orderItem);
+//		}
+		
+		
+		// 5. Create Order Items & Update Stock (Refactored for Variants)
 		for (CartItem cartItem : cartItems) {
-			Product product = cartItem.getProduct();
-			product.setStock(product.getStock() - cartItem.getQuantity());
-			productRepository.save(product);
+		    // 1. Get the specific variant from the cart item
+		    ProductVariant variant = cartItem.getVariant(); 
 
-			OrderItem orderItem = new OrderItem();
-			orderItem.setOrder(order);
-			orderItem.setProduct(product);
-			orderItem.setQuantity(cartItem.getQuantity());
-			orderItem.setPrice(cartItem.getPrice().multiply(new BigDecimal(cartItem.getQuantity())));
-			orderItemRepository.save(orderItem);
+		    // 2. Decrement stock from the Variant, not the Product
+		    int updatedStock = variant.getStock() - cartItem.getQuantity();
+		    if (updatedStock < 0) {
+		        throw new RuntimeException("Insufficient stock for: " + variant.getProduct().getName() + 
+		                                   " (" + variant.getSize() + "/" + variant.getColor() + ")");
+		    }
+		    variant.setStock(updatedStock);
+		    productVariantRepo.save(variant); // 
+
+		    // 3. Create OrderItem pointing to the Variant
+		    OrderItem orderItem = new OrderItem();
+		    orderItem.setOrder(order);
+		    orderItem.setVariant(variant); // Changed from setProduct
+		    orderItem.setQuantity(cartItem.getQuantity());
+		    
+		    // Note: Use variant price or cartItem price. 
+		    // Usually, price * quantity is handled here.
+		    orderItem.setPrice(cartItem.getPrice().multiply(new BigDecimal(cartItem.getQuantity())));
+		    
+		    orderItemRepository.save(orderItem);
 		}
 
 		// 6. Finalize Payment in DB
@@ -206,25 +238,35 @@ public class OrderService {
 	    List<OrderItemDto> itemDtos = orderItems.stream().map(item -> {
 	        OrderItemDto dto = new OrderItemDto();
 	        
-	        // Map ID fields
-	        dto.setId(item.getId()); // The ID of the OrderItem itself
+	        // 1. Get the Variant from the OrderItem
+	        ProductVariant variant = item.getVariant();
+	        // 2. Get the Product from that Variant
+	        Product product = variant.getProduct(); 
+	        
+	        dto.setId(item.getId());
 	        dto.setOrderid(orderId);
 	        
-	        // Map Product details
-	        dto.setProductId(item.getProduct().getId());
-	        dto.setProductName(item.getProduct().getName());
+	        // 3. Map Variant-Specific details
+	        dto.setProductId(product.getId()); // Still useful for linking back to product page
+	        dto.setProductName(product.getName());
+	        dto.setSize(variant.getSize());   // NEW: Show the size bought
+	        dto.setColor(variant.getColor()); // NEW: Show the color bought
+	        
 	        dto.setQuantity(item.getQuantity());
 	        dto.setPrice(item.getPrice()); 
-	        dto.setStockLeft(item.getProduct().getStock());
 	        
-	        // Map Category
-	        if (item.getProduct().getCategory() != null) {
-	            dto.setCategoryName(item.getProduct().getCategory().getName());
+	        // 4. Stock Left is now checked on the Variant level
+	        dto.setStockLeft(variant.getStock()); 
+	        
+	        // 5. Map Category (Accessed via Product)
+	        if (product.getCategory() != null) {
+	            dto.setCategoryName(product.getCategory().getName());
 	        }
 
-	        // Map Image
-	        if (item.getProduct().getProductImages() != null && !item.getProduct().getProductImages().isEmpty()) {
-	            dto.setImageUrl(item.getProduct().getProductImages().get(0).getImageUrl());
+	        // 6. Map Image
+	        // Logic: Try to get images from the product
+	        if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
+	            dto.setImageUrl(product.getProductImages().get(0).getImageUrl());
 	        }
 	        
 	        return dto;

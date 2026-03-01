@@ -16,8 +16,8 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "variant_id") // Changed from product_id
+    private ProductVariant variant;
 
     private Integer quantity;
 
@@ -35,16 +35,16 @@ public class OrderItem {
 		return order;
 	}
 
+	public ProductVariant getVariant() {
+		return variant;
+	}
+
+	public void setVariant(ProductVariant variant) {
+		this.variant = variant;
+	}
+
 	public void setOrder(Order order) {
 		this.order = order;
-	}
-
-	public Product getProduct() {
-		return product;
-	}
-
-	public void setProduct(Product product) {
-		this.product = product;
 	}
 
 	public Integer getQuantity() {
@@ -65,7 +65,7 @@ public class OrderItem {
 
 	@Override
 	public String toString() {
-		return "OrderItem [id=" + id + ", order=" + order + ", product=" + product + ", quantity=" + quantity
+		return "OrderItem [id=" + id + ", order=" + order + ", quantity=" + quantity
 				+ ", price=" + price + "]";
 	}
     

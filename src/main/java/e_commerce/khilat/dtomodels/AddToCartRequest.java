@@ -5,7 +5,7 @@ import java.util.UUID;
 public class AddToCartRequest {
 	
 	private UUID guestId;
-    private Long productId;
+    private Long variantId;
     private Integer quantity;
     
     
@@ -17,11 +17,11 @@ public class AddToCartRequest {
 	public void setGuestId(UUID guestId) {
 		this.guestId = guestId;
 	}
-	public Long getProductId() {
-		return productId;
+	public Long getVariantId() {
+		return variantId;
 	}
-	public void setProductId(Long productId) {
-		this.productId = productId;
+	public void setVariantId(Long variantId) {
+		this.variantId = variantId;
 	}
 	public Integer getQuantity() {
 		return quantity;

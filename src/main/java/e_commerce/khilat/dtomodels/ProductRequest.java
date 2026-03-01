@@ -6,6 +6,7 @@ import java.util.List;
 
 import e_commerce.khilat.entity.Category;
 import e_commerce.khilat.entity.ProductImage;
+import e_commerce.khilat.entity.ProductVariant;
 
 public class ProductRequest {
 
@@ -14,8 +15,9 @@ public class ProductRequest {
 	private Category category;
 	private String name;
 	private String description;
-	private BigDecimal price;
-	private Integer stock;
+//	private BigDecimal price;
+//	private Integer stock;
+	private List<ProductVariant> variants;
 	private String trending; // 'y' or 'n'
 	private Boolean isActive;
 
@@ -45,24 +47,32 @@ public class ProductRequest {
 		this.description = description;
 	}
 
-	public BigDecimal getPrice() {
-		return price;
-	}
-
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
-
-	public Integer getStock() {
-		return stock;
-	}
-
-	public void setStock(Integer stock) {
-		this.stock = stock;
-	}
+//	public BigDecimal getPrice() {
+//		return price;
+//	}
+//
+//	public void setPrice(BigDecimal price) {
+//		this.price = price;
+//	}
+//
+//	public Integer getStock() {
+//		return stock;
+//	}
+//
+//	public void setStock(Integer stock) {
+//		this.stock = stock;
+//	}
 
 	public String getTrending() {
 		return trending;
+	}
+
+	public List<ProductVariant> getVariants() {
+		return variants;
+	}
+
+	public void setVariants(List<ProductVariant> variants) {
+		this.variants = variants;
 	}
 
 	public void setTrending(String trending) {

@@ -16,8 +16,8 @@ public class CartItem {
     private Cart cart;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "variant_id")
+    private ProductVariant variant;
 
     private Integer quantity;
 
@@ -39,14 +39,6 @@ public class CartItem {
 		this.cart = cart;
 	}
 
-	public Product getProduct() {
-		return product;
-	}
-
-	public void setProduct(Product product) {
-		this.product = product;
-	}
-
 	public Integer getQuantity() {
 		return quantity;
 	}
@@ -62,12 +54,22 @@ public class CartItem {
 	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
+	
+	public ProductVariant getVariant() {
+		return variant;
+	}
+
+	public void setVariant(ProductVariant variant) {
+		this.variant = variant;
+	}
+    
 
 	@Override
 	public String toString() {
-		return "CartItem [id=" + id + ", cart=" + cart + ", product=" + product + ", quantity=" + quantity + ", price="
+		return "CartItem [id=" + id + ", cart=" + cart + " , quantity=" + quantity + ", price="
 				+ price + "]";
 	}
-    
+
+	
     
 }

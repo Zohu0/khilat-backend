@@ -27,16 +27,23 @@ public class Product {
     private String name;
 
     private String description;
-
-    private BigDecimal price;
-
-    private Integer stock;
     
     @Column(name = "trending", length = 15)
     private String trending;
     
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<ProductVariant> variants;
+    
 
-    public List<ProductImage> getProductImages() {
+    public List<ProductVariant> getVariants() {
+		return variants;
+	}
+
+	public void setVariants(List<ProductVariant> variants) {
+		this.variants = variants;
+	}
+
+	public List<ProductImage> getProductImages() {
 		return productImages;
 	}
 
@@ -95,22 +102,6 @@ public class Product {
 		this.description = description;
 	}
 
-	public BigDecimal getPrice() {
-		return price;
-	}
-
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
-
-	public Integer getStock() {
-		return stock;
-	}
-
-	public void setStock(Integer stock) {
-		this.stock = stock;
-	}
-
 
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
@@ -123,6 +114,6 @@ public class Product {
 	@Override
 	public String toString() {
 		return "Product [id=" + id + ", category=" + category + ", name=" + name + ", description=" + description
-				+ ", price=" + price + ", stock=" + stock + ", trending=" + trending + ", createdAt=" + createdAt + "]";
+				+ ", price=" + ", trending=" + trending + ", createdAt=" + createdAt + "]";
 	}   
 }

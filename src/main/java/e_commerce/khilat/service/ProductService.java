@@ -39,6 +39,8 @@ public class ProductService {
 	 
 	 @Autowired
 	  private ProductImageService productImageService;
+	 
+	 
 	
 	
 	@Transactional(readOnly = true)
@@ -69,10 +71,9 @@ public class ProductService {
     	response.setCategoryId(product.getCategory().getId());
     	response.setDescription(product.getDescription());
     	response.setName(product.getName());
-    	response.setPrice(product.getPrice());
-    	response.setStock(product.getStock());
     	response.setTrending(product.getTrending());
     	response.setProductImages(product.getProductImages());
+    	response.setVariants(product.getVariants());
     	
     	return response;
     }
@@ -97,8 +98,7 @@ public class ProductService {
         product.setCategory(category);
         product.setName(request.getName());
         product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
-        product.setStock(request.getStock());
+        product.setVariants(request.getVariants());
         product.setIsActive(
             request.getIsActive() != null ? request.getIsActive() : true
         );
@@ -150,8 +150,7 @@ public class ProductService {
          // 🔹 Update basic fields
          product.setName(request.getName());
          product.setDescription(request.getDescription());
-         product.setPrice(request.getPrice());
-         product.setStock(request.getStock());
+         product.setVariants(request.getVariants());
          product.setIsActive(
                  request.getIsActive() != null ? request.getIsActive() : product.getIsActive()
          );

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import e_commerce.khilat.entity.Cart;
 import e_commerce.khilat.entity.CartItem;
 import e_commerce.khilat.entity.Product;
+import e_commerce.khilat.entity.ProductVariant;
 
 @Repository
 public interface CartItemRepo extends JpaRepository<CartItem, Long> {
@@ -25,6 +26,6 @@ public interface CartItemRepo extends JpaRepository<CartItem, Long> {
 	           "WHERE ci.cart = :cart")
 	    List<CartItem> findByCartWithProductDetails(@Param("cart") Cart cart);
 	 
-	 
+	 Optional<CartItem> findByCartAndVariant(Cart cart, ProductVariant variant);
 
 }
