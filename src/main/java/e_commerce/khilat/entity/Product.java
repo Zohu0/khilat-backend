@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -22,6 +24,7 @@ public class Product {
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @BatchSize(size = 20)
     private List<ProductImage> productImages = new ArrayList<>(); 
     
     private String name;
@@ -114,6 +117,6 @@ public class Product {
 	@Override
 	public String toString() {
 		return "Product [id=" + id + ", category=" + category + ", name=" + name + ", description=" + description
-				+ ", price=" + ", trending=" + trending + ", createdAt=" + createdAt + "]";
+				+  ", trending=" + trending + ", createdAt=" + createdAt + "]";
 	}   
 }

@@ -17,6 +17,7 @@ import e_commerce.khilat.dtomodels.ProductRequest;
 import e_commerce.khilat.entity.Category;
 import e_commerce.khilat.entity.Product;
 import e_commerce.khilat.entity.ProductImage;
+import e_commerce.khilat.entity.ProductVariant;
 import e_commerce.khilat.repository.CategoryRepo;
 import e_commerce.khilat.repository.ProductRepo;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,7 +99,15 @@ public class ProductService {
         product.setCategory(category);
         product.setName(request.getName());
         product.setDescription(request.getDescription());
-        product.setVariants(request.getVariants());
+        
+        if (request.getVariants() != null) {
+            for (ProductVariant variant : request.getVariants()) {
+                // This line ensures the 'product_id' column in 'product_variant' table is filled
+                variant.setProduct(product); 
+            }
+            product.setVariants(request.getVariants());
+        }
+        
         product.setIsActive(
             request.getIsActive() != null ? request.getIsActive() : true
         );

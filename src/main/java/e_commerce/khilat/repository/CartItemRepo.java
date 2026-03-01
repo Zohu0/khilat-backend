@@ -18,14 +18,15 @@ public interface CartItemRepo extends JpaRepository<CartItem, Long> {
 	
 	 List<CartItem> findByCart(Cart cart);
 	 
-	 Optional<CartItem> findByCartAndProduct(Cart cart, Product product);
-	 
-	 @Query("SELECT ci FROM CartItem ci " +
-	           "JOIN FETCH ci.product p " +
-	           "LEFT JOIN FETCH p.productImages " +
-	           "WHERE ci.cart = :cart")
-	    List<CartItem> findByCartWithProductDetails(@Param("cart") Cart cart);
-	 
+	 @Query("""
+			    SELECT DISTINCT ci
+			    FROM CartItem ci
+			    JOIN FETCH ci.variant v
+			    JOIN FETCH v.product p
+			    LEFT JOIN FETCH p.variants
+			    WHERE ci.cart = :cart
+			""")
+			List<CartItem> findByCartWithProductDetails(@Param("cart") Cart cart);
 	 Optional<CartItem> findByCartAndVariant(Cart cart, ProductVariant variant);
 
 }

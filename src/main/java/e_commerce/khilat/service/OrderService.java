@@ -138,7 +138,7 @@ public class OrderService {
 		    int updatedStock = variant.getStock() - cartItem.getQuantity();
 		    if (updatedStock < 0) {
 		        throw new RuntimeException("Insufficient stock for: " + variant.getProduct().getName() + 
-		                                   " (" + variant.getSize() + "/" + variant.getColor() + ")");
+		                                   " (" + variant.getSize() + "/"  + ")");
 		    }
 		    variant.setStock(updatedStock);
 		    productVariantRepo.save(variant); // 
@@ -250,7 +250,6 @@ public class OrderService {
 	        dto.setProductId(product.getId()); // Still useful for linking back to product page
 	        dto.setProductName(product.getName());
 	        dto.setSize(variant.getSize());   // NEW: Show the size bought
-	        dto.setColor(variant.getColor()); // NEW: Show the color bought
 	        
 	        dto.setQuantity(item.getQuantity());
 	        dto.setPrice(item.getPrice()); 

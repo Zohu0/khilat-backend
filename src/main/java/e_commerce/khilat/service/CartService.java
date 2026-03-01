@@ -103,8 +103,20 @@ public class CartService {
     }
 
     public List<CartItem> getCartItems(UUID guestId) {
-        return cartRepository.findByGuestId(guestId)
+        // 1. Fetch the items (Product and Variants are already Join Fetched)
+        List<CartItem> items = cartRepository.findByGuestId(guestId)
                 .map(cart -> cartItemRepository.findByCartWithProductDetails(cart))
-                .orElse(new ArrayList<>()); // Return empty list if no cart exists yet
+                .orElse(new ArrayList<>());
+
+        // 2. Explicitly trigger the loading of images for all products in the cart
+        // This uses the @BatchSize we added above for high performance
+        items.forEach(item -> {
+            if (item.getVariant() != null && item.getVariant().getProduct() != null) {
+                // This 'touches' the collection to force Hibernate to fetch it
+                item.getVariant().getProduct().getProductImages().size(); 
+            }
+        });
+
+        return items;
     }
 }
