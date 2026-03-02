@@ -33,11 +33,12 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
 	@Query("""
 		    SELECT DISTINCT p
 		    FROM Product p
-		    JOIN p.variants v
+		    LEFT JOIN p.variants v
+		    JOIN p.category c
 		    WHERE (:keyword IS NULL 
-		           OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+		           OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')))
 		      AND (:category IS NULL 
-		           OR p.category.name = :category)
+		           OR LOWER(c.name) = LOWER(CAST(:category AS string)))
 		      AND (:minPrice IS NULL 
 		           OR v.price >= :minPrice)
 		      AND (:maxPrice IS NULL 
