@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import e_commerce.khilat.dtomodels.AddToCartRequest;
+import e_commerce.khilat.dtomodels.CartItemResponseDTO;
 import e_commerce.khilat.entity.Cart;
 import e_commerce.khilat.entity.CartItem;
 import e_commerce.khilat.entity.Product;
@@ -102,21 +103,45 @@ public class CartService {
         }
     }
 
-    public List<CartItem> getCartItems(UUID guestId) {
-        // 1. Fetch the items (Product and Variants are already Join Fetched)
+    public List<CartItemResponseDTO> getCartItems(UUID guestId) {
+        // 1. Fetch the items with Join Fetch
         List<CartItem> items = cartRepository.findByGuestId(guestId)
                 .map(cart -> cartItemRepository.findByCartWithProductDetails(cart))
                 .orElse(new ArrayList<>());
+        
+        
+        List<CartItemResponseDTO> response = new ArrayList<>();
 
-        // 2. Explicitly trigger the loading of images for all products in the cart
-        // This uses the @BatchSize we added above for high performance
-        items.forEach(item -> {
-            if (item.getVariant() != null && item.getVariant().getProduct() != null) {
-                // This 'touches' the collection to force Hibernate to fetch it
-                item.getVariant().getProduct().getProductImages().size(); 
+        
+        for(CartItem item : items) {
+        	
+            CartItemResponseDTO dto = new CartItemResponseDTO();
+            dto.setCartItemId(item.getId());
+            dto.setQuantity(item.getQuantity());
+            dto.setPrice(item.getPrice());
+            
+            ProductVariant variant = item.getVariant();
+            if (variant != null) {
+            	dto.setVariantId(variant.getId());
+                dto.setSize(variant.getSize());
+                dto.setStockAvailable(variant.getStock());
+                
+                Product product = variant.getProduct();
+                if (product != null) {
+                	dto.setProductId(product.getId());
+                    dto.setProductName(product.getName());
+                    
+                    // Get the first image if it exists
+                    if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
+                        dto.setImageUrl(product.getProductImages().get(0).getImageUrl());
+                    }
+                }
             }
-        });
-
-        return items;
+            
+            response.add(dto);
+        	
+        }
+        
+        return response;
     }
 }

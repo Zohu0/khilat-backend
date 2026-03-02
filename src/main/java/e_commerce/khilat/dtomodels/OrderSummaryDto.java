@@ -12,6 +12,11 @@ public class OrderSummaryDto {
     private String paymentStatus;
     private String orderStatus;
     private LocalDateTime createdAt;
+    private String email;
+    
+    
+    
+    
 
     // getters & setters
 
@@ -30,7 +35,14 @@ public class OrderSummaryDto {
     public void setName(String name) {
         this.name = name;
     }
+    
+    public String getEmail() {
+    	return email;
+    }
 
+    public void setEmail(String email) {
+    	this.email=email;
+    }
     
 
     public Long getPhone() {

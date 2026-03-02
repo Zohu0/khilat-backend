@@ -2,28 +2,57 @@ package e_commerce.khilat.dtomodels;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import e_commerce.khilat.entity.Payment;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 public class OrderDto {
 	
 	private Long id;
-
-	private PaymentDto payment;
 	
+	@Column(name = "guest_id", nullable = false, unique = true)
+    private UUID guestId;
+	
+	private PaymentDto payment; // SAHI: DTO ke andar DTO hi hona chahiye
+	
+	public UUID getGuestId() {
+		return guestId;
+	}
+
+	public void setGuestId(UUID guestId) {
+		this.guestId = guestId;
+	}
+
 	private String email;
     
     private String name;
     
     private String address;
     
-    private String OrderStatus;
+    
+
+	private String status;
     
 	private Long phone;
     
 	private LocalDateTime createdAt;
 	
 	private List<OrderItemDto> items;
+	
+	
+    
+    public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	
 	
     
@@ -68,13 +97,16 @@ public class OrderDto {
 	}
 
 
-	public String getOrderStatus() {
-		return OrderStatus;
-	}
+	
+	public PaymentDto getPayment() {
+        return payment;
+    }
 
-	public void setOrderStatus(String OrderStatus) {
-		this.OrderStatus = OrderStatus;
-	}
+    public void setPayment(PaymentDto payment) {
+        this.payment = payment;
+    }
+
+	
 
 	public Long getId() {
 		return id;
@@ -84,13 +116,7 @@ public class OrderDto {
 		this.id = id;
 	}
 	
-	public void setPayment(PaymentDto payment) {
-		this.payment = payment;
-	}
 	
-	public PaymentDto getPayment() {
-		return payment;
-	}
 	
     public List<OrderItemDto> getItems() {
         return items;

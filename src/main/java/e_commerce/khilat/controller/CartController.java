@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import e_commerce.khilat.dtomodels.AddToCartRequest;
+import e_commerce.khilat.dtomodels.CartItemResponseDTO;
 import e_commerce.khilat.entity.CartItem;
 import e_commerce.khilat.entity.User;
 import e_commerce.khilat.service.CartService;
@@ -49,9 +50,9 @@ public class CartController {
     }
     
     @GetMapping("/{guestId}")
-    public ResponseEntity<List<CartItem>> getCart(@PathVariable UUID guestId) {
-        List<CartItem> items = cartservice.getCartItems(guestId);
-        return ResponseEntity.ok(items);
+    public ResponseEntity<List<CartItemResponseDTO>> getCart(@PathVariable UUID guestId) {
+        List<CartItemResponseDTO> response = cartservice.getCartItems(guestId);
+        return ResponseEntity.ok(response);
     }
     
     

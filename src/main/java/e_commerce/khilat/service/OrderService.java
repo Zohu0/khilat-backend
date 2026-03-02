@@ -219,18 +219,19 @@ public class OrderService {
 	    response.setId(order.getId());
 	    response.setName(order.getName());
 	    response.setPhone(order.getPhone());
-	    response.setOrderStatus(order.getStatus());
+	    response.setStatus(order.getStatus());
 
-	    // Fetch Payment
-	    Payment payment = paymentRepository.findByOrderId(orderId)
-	            .orElseThrow(() -> new RuntimeException("Payment record not found"));
-	    
-	    PaymentDto pmtDto = new PaymentDto();
-	    pmtDto.setId(payment.getId());
-	    pmtDto.setAmount(payment.getAmount());
-	    pmtDto.setCreatedAt(payment.getCreatedAt());
-	    pmtDto.setPaymentstatus(payment.getStatus());
-	    response.setPayment(pmtDto);
+	 // Payment Repository call ki zaroorat nahi agar mapping sahi hai
+	    Payment payment = order.getPayment(); 
+
+	    if (payment != null) {
+	        PaymentDto pmtDto = new PaymentDto();
+	        pmtDto.setId(payment.getId());
+	        pmtDto.setAmount(payment.getAmount());
+	        pmtDto.setCreatedAt(payment.getCreatedAt());
+	        pmtDto.setPaymentstatus(payment.getStatus());
+	        response.setPayment(pmtDto);
+	    }
 	    
 	    // Fetch and Map Order Items
 	    List<OrderItem> orderItems = orderItemRepo.findByOrderId(orderId);
@@ -282,8 +283,8 @@ public class OrderService {
 
 	    if (date != null) {
 	        // Range banana zaroori hai: Pure din ka data chahiye
-	        LocalDateTime start = date.atStartOfDay(); // 2026-02-28 00:00:00
-	        LocalDateTime end = date.atTime(LocalTime.MAX); // 2026-02-28 23:59:59
+	        LocalDateTime start = date.atStartOfDay(); 
+	        LocalDateTime end = date.atTime(LocalTime.MAX); 
 	        
 	        ordersPage = orderRepository.findByStatusAndCreatedAtBetween("PENDING", start, end, pageable);
 	    } else {
@@ -298,6 +299,8 @@ public class OrderService {
 	        dto.setAmount(order.getTotalAmount());
 	        dto.setOrderStatus(order.getStatus());
 	        dto.setCreatedAt(order.getCreatedAt());
+	        dto.setEmail(order.getEmail());
+	        
 
 	        // Payment check logic (Same as before)
 	        Payment payment = paymentRepository
@@ -340,13 +343,24 @@ public class OrderService {
 	    // 1. Order ko DB se find karein
 	    Order order = orderRepository.findById(orderId)
 	            .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
-
-	    // 2. Status update karein
-	    order.setStatus("DISPATCHED");
+	    
+	    
+	    OrderSummaryDto orderDto = new OrderSummaryDto();
+	    orderDto.setOrderId(order.getId());
+	    orderDto.setOrderStatus("DISPATCHED"); // DTO mein status update kiya
+	    orderDto.setEmail(order.getEmail());
+	    orderDto.setName(order.getName());
+	    
+	    order.setStatus(orderDto.getOrderStatus());
 	    orderRepository.save(order);
 
-	    // 3. User ko Dispatch ka email bhejein
-	    sendDispatchEmail(order.getEmail(), order.getName(), order.getId());
+//	    // 2. Status update karein
+//	    order.setStatus("DISPATCHED");
+//	    orderRepository.save(order);
+//
+//	    // 3. User ko Dispatch ka email bhejein
+//	    sendDispatchEmail(order.getEmail(), order.getName(), order.getId());    
+	    sendDispatchEmail(orderDto.getEmail(), orderDto.getName(), orderDto.getOrderId());
 	}
 
 	private void sendDispatchEmail(String guestEmail, String guestName, Long orderId) {
@@ -359,13 +373,9 @@ public class OrderService {
 	        // 1. Check for null and use 'guestName' (the parameter)
 	        String displayName = (guestName != null) ? guestName : "Customer";
 
-	        // 2. Define the template and the content string
-	        String template = "Hi %s,\n\nAapka order #%s dispatch ho gaya hai aur raste mein hai! 📦\n" +
-	                          "Jald hi aapko ye mil jayega.\n\n" +
-	                          "Thank you for shopping with Khilat!\n" +
-	                          "Best Regards,\nKhilat Team";
 	        
-	        String content = String.format(template, displayName, orderId);
+	        
+	        String content = String.format(CommonConstant.ORDER_DISPATCH_EMAIL_TEMPLATE, displayName, orderId);
 
 	        // 3. Set the text to the message
 	        message.setText(content);

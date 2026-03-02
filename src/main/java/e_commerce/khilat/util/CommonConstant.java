@@ -20,4 +20,12 @@ public class CommonConstant {
                "Best Regards,\n" +
                "Khilat Team";
     }
+	
+	public static final String ORDER_DISPATCH_EMAIL_TEMPLATE = 
+		    "Dear %s,\n\n" +
+		    "Your order #%s has been dispatched and is currently in transit. 📦\n" +
+		    "You will receive it shortly.\n\n" +
+		    "Thank you for shopping with Khilat!\n\n" +
+		    "Best Regards,\n" +
+		    "Team Khilat";
 }
