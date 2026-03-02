@@ -34,7 +34,7 @@ public class Product {
     @Column(name = "trending", length = 15)
     private String trending;
     
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants;
     
 
