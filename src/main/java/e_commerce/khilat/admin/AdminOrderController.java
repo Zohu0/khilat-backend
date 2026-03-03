@@ -55,7 +55,7 @@ public class AdminOrderController {
 	public ResponseEntity<Page<OrderSummaryDto>> getAllOrderSummaries(
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size,
-	        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+	        @RequestParam(required = false) Long date) {
 
 	    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 	    Page<OrderSummaryDto> result = orderService.getOrderSummariesForAdmin(pageable, date);

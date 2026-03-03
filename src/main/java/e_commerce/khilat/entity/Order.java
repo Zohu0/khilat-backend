@@ -9,29 +9,45 @@ import java.util.UUID;
 @Table(name = "orders")
 public class Order {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "guest_id", nullable = false, unique = true)
-    private UUID guestId;
-    
-    private String email;
-    
-    private String name;
-    
-    private String address;
-    
-    private Long phone;
-    
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "payment_id", referencedColumnName = "id")
-    private Payment payment;
+	@Column(name = "guest_id", nullable = false, unique = true)
+	private UUID guestId;
 
-    private String status;
-    
+	private String email;
 
-    public String getName() {
+	private String name;
+
+	private String address;
+
+	private Long phone;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "payment_id", referencedColumnName = "id")
+	private Payment payment;
+
+	private String status;
+
+	@Column(name = "total_amount")
+	private BigDecimal totalAmount;
+
+	@Column(name = "dt_of_ops")
+	private Long dtOfOps;
+
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
+
+	public Long getDtOfOps() {
+		return dtOfOps;
+	}
+
+	public void setDtOfOps(Long dtOfOps) {
+		this.dtOfOps = dtOfOps;
+	}
+
+	public String getName() {
 		return name;
 	}
 
@@ -71,13 +87,6 @@ public class Order {
 		this.email = email;
 	}
 
-	@Column(name = "total_amount")
-    private BigDecimal totalAmount;
-
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
 	public Long getId() {
 		return id;
 	}
@@ -109,20 +118,19 @@ public class Order {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-	
+
 	public Payment getPayment() {
-	    return payment;
+		return payment;
 	}
 
 	public void setPayment(Payment payment) {
-	    this.payment = payment;
+		this.payment = payment;
 	}
 
 	@Override
 	public String toString() {
-		return "Order [id=" + id + ", totalAmount=" + totalAmount + ", status=" + status
-				+ ", createdAt=" + createdAt + "]";
+		return "Order [id=" + id + ", totalAmount=" + totalAmount + ", status=" + status + ", createdAt=" + createdAt
+				+ "]";
 	}
-    
-    
+
 }

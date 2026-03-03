@@ -20,6 +20,8 @@ import e_commerce.khilat.entity.ProductImage;
 import e_commerce.khilat.entity.ProductVariant;
 import e_commerce.khilat.repository.CategoryRepo;
 import e_commerce.khilat.repository.ProductRepo;
+import e_commerce.khilat.util.DateUtil;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
@@ -115,6 +117,7 @@ public class ProductService {
             request.getTrending() != null ? request.getTrending() : "n"
         );
         product.setCreatedAt(LocalDateTime.now());
+        product.setDtOfOps(DateUtil.dateConverterToLong(product.getCreatedAt()));
 
         return productRepo.save(product);
     }

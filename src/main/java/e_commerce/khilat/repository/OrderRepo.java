@@ -17,11 +17,12 @@ public interface OrderRepo extends JpaRepository<Order, Long> {
 	
 //	<List>Order findByguestId(UUID guestId);
 	
-	<List>Order findByguestId(UUID guestId);
 	
 	Optional<Order> findByPaymentId(Long paymentId);
 	
 	Page<Order> findByStatus(String status, Pageable pageable);
+	
+	Page<Order> findByStatusAndDtOfOps(String status,Long dtOfOps, Pageable pageable);
 	
 	
 	Page<Order> findByStatusAndCreatedAtBetween(String status, LocalDateTime start, LocalDateTime end, Pageable pageable);	

@@ -43,10 +43,12 @@ public class Product {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
-    
+    @Column(name = "dt_of_ops")
+    private Long dtOfOps;
     
 
-    public List<ProductVariant> getVariants() {
+
+	public List<ProductVariant> getVariants() {
 		return variants;
 	}
     
@@ -123,6 +125,17 @@ public class Product {
 		this.createdAt = createdAt;
 	}
 
+    public Long getDtOfOps() {
+		return dtOfOps;
+	}
+
+
+
+	public void setDtOfOps(Long dtOfOps) {
+		this.dtOfOps = dtOfOps;
+	}
+
+	
 	@Override
 	public String toString() {
 		return "Product [id=" + id + ", category=" + category + ", name=" + name + ", description=" + description

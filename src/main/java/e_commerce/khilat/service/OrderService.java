@@ -31,6 +31,7 @@ import e_commerce.khilat.repository.PaymentRepo;
 import e_commerce.khilat.repository.ProductRepo;
 import e_commerce.khilat.repository.ProductVariantRepo;
 import e_commerce.khilat.util.CommonConstant;
+import e_commerce.khilat.util.DateUtil;
 import jakarta.transaction.Transactional;
 
 import e_commerce.khilat.dtomodels.OrderDto;
@@ -104,6 +105,7 @@ public class OrderService {
 		
 		
 		order.setCreatedAt(LocalDateTime.now());
+		order.setDtOfOps(DateUtil.dateConverterToLong(order.getCreatedAt()));
 
 		order.setStatus("PENDING");
 
@@ -317,15 +319,14 @@ public class OrderService {
 	}
 	
 	
-	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable, LocalDate date) {
+	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable, Long date) {
 		Page<Order> ordersPage;
+		
 
 	    if (date != null) {
-	        // Range banana zaroori hai: Pure din ka data chahiye
-	        LocalDateTime start = date.atStartOfDay(); 
-	        LocalDateTime end = date.atTime(LocalTime.MAX); 
+	       
 	        
-	        ordersPage = orderRepository.findByStatusAndCreatedAtBetween("PENDING", start, end, pageable);
+	        ordersPage = orderRepository.findByStatusAndDtOfOps("PENDING",date, pageable);
 	    } else {
 	        ordersPage = orderRepository.findByStatus("PENDING", pageable);
 	    }
@@ -338,6 +339,8 @@ public class OrderService {
 	        dto.setAmount(order.getTotalAmount());
 	        dto.setOrderStatus(order.getStatus());
 	        dto.setCreatedAt(order.getCreatedAt());
+	        
+	        
 	        dto.setEmail(order.getEmail());
 	        
 
