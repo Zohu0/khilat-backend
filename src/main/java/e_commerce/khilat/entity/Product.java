@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.hibernate.annotations.BatchSize;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -38,9 +39,18 @@ public class Product {
     private List<ProductVariant> variants;
     
 
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    
+    
+
     public List<ProductVariant> getVariants() {
 		return variants;
 	}
+    
+    
 
 	public void setVariants(List<ProductVariant> variants) {
 		this.variants = variants;
@@ -70,8 +80,7 @@ public class Product {
 	public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
 	
-	@Column(name = "created_at")
-    private LocalDateTime createdAt;
+	
 
 	public Long getId() {
 		return id;

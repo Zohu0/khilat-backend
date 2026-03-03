@@ -236,37 +236,76 @@ public class OrderService {
 	    // Fetch and Map Order Items
 	    List<OrderItem> orderItems = orderItemRepo.findByOrderId(orderId);
 	    
+//	    List<OrderItemDto> itemDtos = orderItems.stream().map(item -> {
+//	        OrderItemDto dto = new OrderItemDto();
+//	        
+//	        // 1. Get the Variant from the OrderItem
+//	        ProductVariant variant = item.getVariant();
+//	        // 2. Get the Product from that Variant
+//	        Product product = variant.getProduct(); 
+//	        
+//	        dto.setId(item.getId());
+//	        dto.setOrderid(orderId);
+//	        
+//	        // 3. Map Variant-Specific details
+//	        dto.setProductId(product.getId()); // Still useful for linking back to product page
+//	        dto.setProductName(product.getName());
+//	        dto.setSize(variant.getSize());   // NEW: Show the size bought
+//	        
+//	        dto.setQuantity(item.getQuantity());
+//	        dto.setPrice(item.getPrice()); 
+//	        
+//	        // 4. Stock Left is now checked on the Variant level
+//	        dto.setStockLeft(variant.getStock()); 
+//	        
+//	        // 5. Map Category (Accessed via Product)
+//	        if (product.getCategory() != null) {
+//	            dto.setCategoryName(product.getCategory().getName());
+//	        }
+//
+//	        // 6. Map Image
+//	        // Logic: Try to get images from the product
+//	        if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
+//	            dto.setImageUrl(product.getProductImages().get(0).getImageUrl());
+//	        }
+//	        
+//	        return dto;
+//	    }).collect(Collectors.toList());
+//	    
+//	    response.setItems(itemDtos);
+//	    
+//	    return response; // Return the populated DTO
+	    
 	    List<OrderItemDto> itemDtos = orderItems.stream().map(item -> {
 	        OrderItemDto dto = new OrderItemDto();
-	        
-	        // 1. Get the Variant from the OrderItem
 	        ProductVariant variant = item.getVariant();
-	        // 2. Get the Product from that Variant
-	        Product product = variant.getProduct(); 
-	        
+
 	        dto.setId(item.getId());
 	        dto.setOrderid(orderId);
-	        
-	        // 3. Map Variant-Specific details
-	        dto.setProductId(product.getId()); // Still useful for linking back to product page
-	        dto.setProductName(product.getName());
-	        dto.setSize(variant.getSize());   // NEW: Show the size bought
-	        
 	        dto.setQuantity(item.getQuantity());
-	        dto.setPrice(item.getPrice()); 
-	        
-	        // 4. Stock Left is now checked on the Variant level
-	        dto.setStockLeft(variant.getStock()); 
-	        
-	        // 5. Map Category (Accessed via Product)
-	        if (product.getCategory() != null) {
-	            dto.setCategoryName(product.getCategory().getName());
-	        }
+	        dto.setPrice(item.getPrice());
 
-	        // 6. Map Image
-	        // Logic: Try to get images from the product
-	        if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
-	            dto.setImageUrl(product.getProductImages().get(0).getImageUrl());
+	        if (variant != null) {
+	            dto.setSize(variant.getSize());
+	            dto.setStockLeft(variant.getStock());
+
+	            Product product = variant.getProduct();
+	            if (product != null) {
+	                // Only access product methods if product is NOT null
+	                dto.setProductId(product.getId());
+	                dto.setProductName(product.getName());
+	                
+	                if (product.getCategory() != null) {
+	                    dto.setCategoryName(product.getCategory().getName());
+	                }
+
+	                if (product.getProductImages() != null && !product.getProductImages().isEmpty()) {
+	                    dto.setImageUrl(product.getProductImages().get(0).getImageUrl());
+	                }
+	            } else {
+	                // Optional: Handle the case where the product is missing
+	                dto.setProductName("Unknown Product (Deleted)");
+	            }
 	        }
 	        
 	        return dto;
@@ -274,7 +313,7 @@ public class OrderService {
 	    
 	    response.setItems(itemDtos);
 	    
-	    return response; // Return the populated DTO
+	    return response; // Successfully returns the type OrderDto
 	}
 	
 	

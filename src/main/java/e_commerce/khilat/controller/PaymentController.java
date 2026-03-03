@@ -21,34 +21,34 @@ import e_commerce.khilat.service.StripePaymentService;
 @CrossOrigin
 public class PaymentController {
 	
-	 private final StripePaymentService paymentService;
-
-	    public PaymentController(StripePaymentService paymentService) {
-	        this.paymentService = paymentService;
-	    }
-	    
-	    
-	    
-	    
-	    
-	
-	    @PostMapping("/create-intent")
-	    public ResponseEntity<?> createPayment(@RequestBody PaymentRequest request) {
-	        try {
-	            // Pass the guestId from the request to the service
-	            PaymentIntent intent = paymentService.createPaymentIntent(
-	                    request.getAmount(),
-	                    request.getCurrency(),
-	                    request.getGuestId() // Ensure your PaymentRequest DTO has this field
-	            );
-
-	            Map<String, String> response = new HashMap<>();
-	            response.put("clientSecret", intent.getClientSecret());
-
-	            return ResponseEntity.ok(response);
-	        } catch (StripeException e) {
-	            return ResponseEntity.badRequest().body(e.getMessage());
-	        }
-	    }
+//	 private final StripePaymentService paymentService;
+//
+//	    public PaymentController(StripePaymentService paymentService) {
+//	        this.paymentService = paymentService;
+//	    }
+//	    
+//	    
+//	    
+//	    
+//	    
+//	
+//	    @PostMapping("/create-intent")
+//	    public ResponseEntity<?> createPayment(@RequestBody PaymentRequest request) {
+//	        try {
+//	            // Pass the guestId from the request to the service
+//	            PaymentIntent intent = paymentService.createPaymentIntent(
+//	                    request.getAmount(),
+//	                    request.getCurrency(),
+//	                    request.getGuestId() // Ensure your PaymentRequest DTO has this field
+//	            );
+//
+//	            Map<String, String> response = new HashMap<>();
+//	            response.put("clientSecret", intent.getClientSecret());
+//
+//	            return ResponseEntity.ok(response);
+//	        } catch (StripeException e) {
+//	            return ResponseEntity.badRequest().body(e.getMessage());
+//	        }
+//	    }
 
 }
