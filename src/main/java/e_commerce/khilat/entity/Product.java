@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Where;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "products")
+@Where(clause = "deleted = false")
 public class Product {
 
     @Id
@@ -35,7 +37,8 @@ public class Product {
     @Column(name = "trending", length = 15)
     private String trending;
     
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @SuppressWarnings("deprecation")
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants;
     
 
@@ -45,6 +48,9 @@ public class Product {
     
     @Column(name = "dt_of_ops")
     private Long dtOfOps;
+    
+    @Column(name="deleted")
+    private boolean deleted = false;
     
 
 
@@ -127,6 +133,18 @@ public class Product {
 
     public Long getDtOfOps() {
 		return dtOfOps;
+	}
+
+
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 
 

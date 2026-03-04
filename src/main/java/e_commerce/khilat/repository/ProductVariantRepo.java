@@ -8,5 +8,7 @@ import e_commerce.khilat.entity.ProductVariant;
 
 @Repository
 public interface ProductVariantRepo extends JpaRepository<ProductVariant, Long> {
+	
+	
 
 }

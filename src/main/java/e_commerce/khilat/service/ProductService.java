@@ -20,6 +20,7 @@ import e_commerce.khilat.entity.ProductImage;
 import e_commerce.khilat.entity.ProductVariant;
 import e_commerce.khilat.repository.CategoryRepo;
 import e_commerce.khilat.repository.ProductRepo;
+import e_commerce.khilat.repository.ProductVariantRepo;
 import e_commerce.khilat.util.DateUtil;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,9 @@ public class ProductService {
 	
 	@Autowired
 	private ProductRepo productRepo;
+	
+	@Autowired
+	private ProductVariantRepo productVariantRepo;
 	
 	 @Autowired
 	  private CategoryRepo categoryRepo;
@@ -249,14 +253,34 @@ public class ProductService {
          return productRepo.save(product);
      }
      
+     
+     
+     
      @Transactional
      public void deleteProduct(Long productId) {
-
+         // 1. Fetch the product
          Product product = productRepo.findById(productId)
                  .orElseThrow(() -> new RuntimeException("Product not found"));
 
-         productRepo.delete(product);  
+         // 2. Mark the Product itself as deleted (if you added the 'deleted' column there too)
+         product.setDeleted(true);
+
+         // 3. Cleanly update all variants using a for-each loop
+         if (product.getVariants() != null) {
+             for (ProductVariant variant : product.getVariants()) {
+                 variant.setDeleted(true);
+             }
+             productRepo.save(product);
+         }
+         
      }
+     
+     
+     
+     
+     
+     
+     
      
      public Page<Product> filterProducts(
              String keyword,

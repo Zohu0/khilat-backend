@@ -2,8 +2,11 @@ package e_commerce.khilat.entity;
 
 import java.math.BigDecimal;
 
+import org.hibernate.annotations.Where;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,6 +17,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "product_variant")
+@Where(clause = "deleted = false")
 public class ProductVariant {
     
 
@@ -31,17 +35,28 @@ public class ProductVariant {
     @JsonIgnore
     private Product product;
     
+    @Column(name="deleted")
+    private boolean deleted = false;
     
     
-    
-    
-    public Long getId() {
+	public Long getId() {
 		return id;
 	}
 
 	public void setId(Long id) {
 		this.id = id;
 	}
+
+    
+    
+    public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
 
 	public String getSize() {
 		return size;
