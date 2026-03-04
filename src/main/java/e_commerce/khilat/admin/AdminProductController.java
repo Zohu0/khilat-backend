@@ -135,12 +135,14 @@ public class AdminProductController {
 	
 	@GetMapping("/getallproducts")
 	 public ResponseEntity<Page<Product>> getProducts(
-	            @RequestParam(required = false) String keyword,
+	            @RequestParam(required = false) String search,
 	            @RequestParam(required = false) String category,
 	            @RequestParam(required = false) BigDecimal minPrice,
 	            @RequestParam(required = false) BigDecimal maxPrice,
 	            @RequestParam(defaultValue = "0") int page,
 		        @RequestParam(defaultValue = "10") int size) {
+		
+		String keyword = search;
 
 			Pageable pageable = PageRequest.of(page, size);
 	        Page<Product> result =
