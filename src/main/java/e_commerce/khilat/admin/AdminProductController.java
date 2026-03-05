@@ -146,6 +146,8 @@ public class AdminProductController {
 		        @RequestParam(defaultValue = "10") int size) {
 		
 		String keyword = search;
+		
+		System.out.println("keyword :" + keyword);
 
 			Pageable pageable = PageRequest.of(page, size);
 	        Page<Product> result =

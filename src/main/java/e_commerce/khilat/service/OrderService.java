@@ -321,68 +321,99 @@ public class OrderService {
 	    return response; // Successfully returns the type OrderDto
 	}
 	
-	@Cacheable(value = "orders", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize)")
-	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable, Long date) {
-		Page<Order> ordersPage;
-		
-
-	    if (date != null) {
-	       
-	        
-	        ordersPage = orderRepository.findByStatusAndDtOfOps("PENDING",date, pageable);
-	    } else {
-	        ordersPage = orderRepository.findByStatus("PENDING", pageable);
-	    }
-
-	    return ordersPage.map(order -> {
-	        OrderSummaryDto dto = new OrderSummaryDto();
-	        dto.setOrderId(order.getId());
-	        dto.setName(order.getName());
-	        dto.setPhone(order.getPhone());
-	        dto.setAmount(order.getTotalAmount());
-	        dto.setOrderStatus(order.getStatus());
-	        dto.setCreatedAt(order.getCreatedAt());
-	        
-	        
-	        dto.setEmail(order.getEmail());
-	        
-
-	        // Payment check logic (Same as before)
-	        Payment payment = paymentRepository
-	                .findByOrderId(order.getId())
-	                .orElse(null);
-
-	        if (payment != null) {
-	            dto.setPaymentStatus(payment.getStatus());
-	        } else {
-	            dto.setPaymentStatus("PENDING");
-	        }
-
-	        return dto;
-	    });
-	}
+//	@Cacheable(value = "orders", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize)")
+//	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable, Long date) {
+//		Page<Order> ordersPage;
+//		
+//
+//	    if (date != null) {
+//	       
+//	        
+//	        ordersPage = orderRepository.findByStatusAndDtOfOps("PENDING",date, pageable);
+//	    } else {
+//	        ordersPage = orderRepository.findByStatus("PENDING", pageable);
+//	    }
+//
+//	    return ordersPage.map(order -> {
+//	        OrderSummaryDto dto = new OrderSummaryDto();
+//	        dto.setOrderId(order.getId());
+//	        dto.setName(order.getName());
+//	        dto.setPhone(order.getPhone());
+//	        dto.setAmount(order.getTotalAmount());
+//	        dto.setOrderStatus(order.getStatus());
+//	        dto.setCreatedAt(order.getCreatedAt());
+//	        
+//	        
+//	        dto.setEmail(order.getEmail());
+//	        
+//
+//	        // Payment check logic (Same as before)
+//	        Payment payment = paymentRepository
+//	                .findByOrderId(order.getId())
+//	                .orElse(null);
+//
+//	        if (payment != null) {
+//	            dto.setPaymentStatus(payment.getStatus());
+//	        } else {
+//	            dto.setPaymentStatus("PENDING");
+//	        }
+//
+//	        return dto;
+//	    });
+//	}
 	
-	@Cacheable(value = "orders", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize)")
-	public Page<OrderSummaryDto> getDispatchedOrderSummaries(Pageable pageable) {
-	    // Sirf DISPATCHED status wale orders fetch karega
-	    Page<Order> ordersPage = orderRepository.findByStatus("DISPATCHED", pageable);
+	
+	@Cacheable(
+		    value = "orders",
+		    key = "#status + '-' + #date + '-' + #pageable.pageNumber + '-' + #pageable.pageSize"
+		)
+		public Page<OrderSummaryDto> getOrderSummaries(String status, Long date, Pageable pageable) {
 
-	    return ordersPage.map(order -> {
-	        OrderSummaryDto dto = new OrderSummaryDto();
-	        dto.setOrderId(order.getId());
-	        dto.setName(order.getName());
-	        dto.setPhone(order.getPhone());
-	        dto.setAmount(order.getTotalAmount());
-	        dto.setOrderStatus(order.getStatus());
-	        dto.setCreatedAt(order.getCreatedAt());
+		    Page<Order> ordersPage;
 
-	        // Payment status fetch logic
-	        paymentRepository.findByOrderId(order.getId())
-	            .ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+		    if (date != null) {
+		        ordersPage = orderRepository.findByStatusAndDtOfOps(status, date, pageable);
+		    } else {
+		        ordersPage = orderRepository.findByStatus(status, pageable);
+		    }
 
-	        return dto;
-	    });
-	}
+		    return ordersPage.map(order -> {
+		        OrderSummaryDto dto = new OrderSummaryDto();
+		        dto.setOrderId(order.getId());
+		        dto.setName(order.getName());
+		        dto.setPhone(order.getPhone());
+		        dto.setAmount(order.getTotalAmount());
+		        dto.setOrderStatus(order.getStatus());
+		        dto.setCreatedAt(order.getCreatedAt());
+
+		        paymentRepository.findByOrderId(order.getId())
+		                .ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+
+		        return dto;
+		    });
+		}	
+	
+//	@Cacheable(value = "orders", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize)")
+//	public Page<OrderSummaryDto> getDispatchedOrderSummaries(Pageable pageable) {
+//	    // Sirf DISPATCHED status wale orders fetch karega
+//	    Page<Order> ordersPage = orderRepository.findByStatus("DISPATCHED", pageable);
+//
+//	    return ordersPage.map(order -> {
+//	        OrderSummaryDto dto = new OrderSummaryDto();
+//	        dto.setOrderId(order.getId());
+//	        dto.setName(order.getName());
+//	        dto.setPhone(order.getPhone());
+//	        dto.setAmount(order.getTotalAmount());
+//	        dto.setOrderStatus(order.getStatus());
+//	        dto.setCreatedAt(order.getCreatedAt());
+//
+//	        // Payment status fetch logic
+//	        paymentRepository.findByOrderId(order.getId())
+//	            .ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+//
+//	        return dto;
+//	    });
+//	}
 	
 	@Transactional
 	@Caching(evict = {

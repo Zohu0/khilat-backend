@@ -56,30 +56,44 @@ public class AdminOrderController {
 	
 	
 	
-	@GetMapping("/order-pending")
-	public ResponseEntity<Page<OrderSummaryDto>> getAllOrderSummaries(
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size,
-	        @RequestParam(required = false) Long date) {
-
-	    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-	    Page<OrderSummaryDto> result = orderService.getOrderSummariesForAdmin(pageable, date);
-
-	    return ResponseEntity.ok(result);
-	}
+//	@GetMapping("/order-pending")
+//	public ResponseEntity<Page<OrderSummaryDto>> getAllOrderSummaries(
+//	        @RequestParam(defaultValue = "0") int page,
+//	        @RequestParam(defaultValue = "10") int size,
+//	        @RequestParam(required = false) Long date) {
+//
+//	    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+//	    Page<OrderSummaryDto> result = orderService.getOrderSummariesForAdmin(pageable, date);
+//
+//	    return ResponseEntity.ok(result);
+//	}
 	
-	
-	@GetMapping("/dispatched-orders")
-	public ResponseEntity<Page<OrderSummaryDto>> getDispatchedOrders(
+	@GetMapping("/orders")
+	public ResponseEntity<Page<OrderSummaryDto>> getOrders(
+	        @RequestParam(required = false) Long date,
+	        @RequestParam String status,
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size) {
 
-	    Pageable pageable = PageRequest.of(page, size);
-	    Page<OrderSummaryDto> result = orderService.getDispatchedOrderSummaries(pageable);
+	    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+	    
+	    Page<OrderSummaryDto> result = orderService.getOrderSummaries(status, date, pageable);
 
 	    return ResponseEntity.ok(result);
 	}
 	
+	
+//	@GetMapping("/dispatched-orders")
+//	public ResponseEntity<Page<OrderSummaryDto>> getDispatchedOrders(
+//	        @RequestParam(defaultValue = "0") int page,
+//	        @RequestParam(defaultValue = "10") int size) {
+//
+//	    Pageable pageable = PageRequest.of(page, size);
+//	    Page<OrderSummaryDto> result = orderService.getDispatchedOrderSummaries(pageable);
+//
+//	    return ResponseEntity.ok(result);
+//	}
+//	
 	
 	
 	@PostMapping("/dispatch/{orderId}")
