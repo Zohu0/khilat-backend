@@ -7,6 +7,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -127,6 +129,7 @@ public class ProductService {
     }
 
      @Transactional
+     @CacheEvict(value = "products", allEntries = true)
      public Product createProductWithImages(ProductRequest request, List<MultipartFile> images) {
          // 1. Save the Product first (to generate the ID)
          Product savedProduct = createProduct(request);
@@ -281,7 +284,7 @@ public class ProductService {
      
      
      
-     
+     @Cacheable(value = "products", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize) + '-' + #keyword + '-' + #category + '-' + #minPrice + '-' + #maxPrice")
      public Page<Product> filterProducts(
              String keyword,
              String category,

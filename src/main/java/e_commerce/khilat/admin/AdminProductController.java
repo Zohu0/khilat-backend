@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -83,6 +84,7 @@ public class AdminProductController {
 	
 	
 
+	
 	@PostMapping(value = "/addproducts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Product> createProductWithImages(@RequestPart("product") String productJson,
 			@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
@@ -103,6 +105,7 @@ public class AdminProductController {
 	
 	
 
+	@CacheEvict(value = "products", allEntries = true)
 	@PostMapping(value = "/updateproduct/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Product> updateProductWithImages(@PathVariable Long productId,
 			@RequestPart("product") String productJson,
@@ -124,7 +127,7 @@ public class AdminProductController {
 	
 	
 	
-	
+	@CacheEvict(value = "products", allEntries = true)
 	@DeleteMapping("/deleteproduct/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long productId) {
 
@@ -154,6 +157,7 @@ public class AdminProductController {
 	  
 
 
+		@CacheEvict(value = "categories", allEntries = true)
 	    @PostMapping("/addCategory")
 	    public Category addCategory(@RequestBody Category category) {
 	        return categoryService.addCategory(category);
@@ -164,12 +168,14 @@ public class AdminProductController {
 	        return categoryService.addMultipleCategories(categories);
 	    }
 	    
+	    @CacheEvict(value = "categories", allEntries = true)
 	    @PutMapping("/updateCategory/{id}")
 	    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
 	        Category updatedCategory = categoryService.updateCategory(id, category);
 	        return ResponseEntity.ok(updatedCategory);
 	    }
 
+	    @CacheEvict(value = "categories", allEntries = true)
 	    @DeleteMapping("/deleteCategory/{id}")
 	    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
 	        categoryService.deleteCategory(id);

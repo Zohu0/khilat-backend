@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -318,7 +321,7 @@ public class OrderService {
 	    return response; // Successfully returns the type OrderDto
 	}
 	
-	
+	@Cacheable(value = "orders", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize)")
 	public Page<OrderSummaryDto> getOrderSummariesForAdmin(Pageable pageable, Long date) {
 		Page<Order> ordersPage;
 		
@@ -359,6 +362,7 @@ public class OrderService {
 	    });
 	}
 	
+	@Cacheable(value = "orders", key = "T(String).valueOf(#pageable.pageNumber) + '-' + T(String).valueOf(#pageable.pageSize)")
 	public Page<OrderSummaryDto> getDispatchedOrderSummaries(Pageable pageable) {
 	    // Sirf DISPATCHED status wale orders fetch karega
 	    Page<Order> ordersPage = orderRepository.findByStatus("DISPATCHED", pageable);
@@ -381,6 +385,10 @@ public class OrderService {
 	}
 	
 	@Transactional
+	@Caching(evict = {
+		    @CacheEvict(value = "orders", allEntries = true),
+		    @CacheEvict(value = "orderItems", allEntries = true)
+		})
 	public void markOrderAsDispatched(Long orderId) {
 	    // 1. Order ko DB se find karein
 	    Order order = orderRepository.findById(orderId)

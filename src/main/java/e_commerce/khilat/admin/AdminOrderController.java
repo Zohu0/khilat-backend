@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +54,8 @@ public class AdminOrderController {
 	    }
 	}
 	
+	
+	
 	@GetMapping("/order-pending")
 	public ResponseEntity<Page<OrderSummaryDto>> getAllOrderSummaries(
 	        @RequestParam(defaultValue = "0") int page,
@@ -62,6 +67,7 @@ public class AdminOrderController {
 
 	    return ResponseEntity.ok(result);
 	}
+	
 	
 	@GetMapping("/dispatched-orders")
 	public ResponseEntity<Page<OrderSummaryDto>> getDispatchedOrders(
