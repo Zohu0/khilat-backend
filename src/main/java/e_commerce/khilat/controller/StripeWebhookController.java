@@ -37,19 +37,47 @@ public class StripeWebhookController {
     @PostMapping
     public ResponseEntity<String> handleWebhook(@RequestBody String payload,
                                                  @RequestHeader("Stripe-Signature") String sigHeader) {
-    	System.out.println("Inside webhook method");
+    	
         Event event;
 
         try {
             event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
-            System.out.println("Received Event: " + event.getType() + " ID: " + event.getId());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid signature");
         }
+        
 
+     // Inside StripeWebhookController.java
+
+     // Check for any refund-related event
+     if ("charge.refunded".equals(event.getType()) || 
+         "charge.refund.updated".equals(event.getType()) || 
+         "refund.created".equals(event.getType())) {
+
+         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+         String paymentIntentId = null;
+
+         // Use your existing fallback logic to get the object
+         StripeObject stripeObject = dataObjectDeserializer.getObject().orElseGet(() -> {
+             try { return dataObjectDeserializer.deserializeUnsafe(); } catch (Exception e) { return null; }
+         });
+
+         if (stripeObject instanceof com.stripe.model.Charge charge) {
+             paymentIntentId = charge.getPaymentIntent();
+         } else if (stripeObject instanceof com.stripe.model.Refund refund) {
+             paymentIntentId = refund.getPaymentIntent();
+         }
+
+         if (paymentIntentId != null) {
+             orderService.updatePaymentStatusToRefunded(paymentIntentId);
+             return ResponseEntity.ok("Refund Processed");
+         }
+     }
+        
+        
         if ("payment_intent.succeeded".equals(event.getType())) {
         	
-        	System.out.println("Inside webhook execution");
+        	
             
             EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
             PaymentIntent intent = null;

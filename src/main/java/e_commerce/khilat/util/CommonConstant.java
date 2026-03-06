@@ -2,12 +2,19 @@ package e_commerce.khilat.util;
 
 public class CommonConstant {
 	
+	public static final String SUCCESS = "SUCCESS";
+	public static final String CANCELLED = "CANCELLED";
+	public static final String PENDING = "PENDING";
+	public static final String REFUNDED = "REFUNDED";
+
+
+
 	public static final String EmailMessage = "\"Aapka order successfully place ho gaya hai! ✅\\n\" +\n"
 			+ "                    \"Humne aapka payment receive kar liya hai aur hum jald hi aapka order dispatch karenge.\\n\\n\" +\n"
 			+ "                    \"Thank you for shopping with Khilat!\\n\" +\n"
 			+ "                    \"Best Regards,\\nKhilat Team\"";
 	
-	public static final String SUCCESS = "SUCCESS";
+	
 	
 	
 	public static String getDispatchMessage(String guestName, String orderId) {
@@ -26,6 +33,15 @@ public class CommonConstant {
 		    "Your order #%s has been dispatched and is currently in transit. 📦\n" +
 		    "You will receive it shortly.\n\n" +
 		    "Thank you for shopping with Khilat!\n\n" +
+		    "Best Regards,\n" +
+		    "Team Khilat";
+	
+	
+	public static final String ORDER_CANCELLED_EMAIL_TEMPLATE = 
+		    "Dear %s,\n\n" +
+		    "We are writing to confirm that your order #%s has been successfully cancelled. ❌\n" +
+		    "If any payment was processed, the refund will be initiated and should reflect in your account within 5-7 business days.\n\n" +
+		    "We’re sorry it didn't work out this time, but we hope to see you again soon!\n\n" +
 		    "Best Regards,\n" +
 		    "Team Khilat";
 }

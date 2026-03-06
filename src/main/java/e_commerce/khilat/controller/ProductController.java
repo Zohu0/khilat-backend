@@ -3,6 +3,8 @@ package e_commerce.khilat.controller;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import e_commerce.khilat.service.ProductService;
 
 import org.springframework.http.MediaType;
@@ -95,6 +97,25 @@ public class ProductController {
 
 	        return ResponseEntity.ok(result);
 	    }
+	
+	
+	@PostMapping(value = "/cancel-order")
+	public ResponseEntity<Product> cancelOrder(@RequestPart("product") String productJson,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
+		
+		System.out.println("process started of saving product with image");
+		LOGGER.debug("process started of saving product with image");
+
+		LOGGER.debug("productJSon Vaue : {}", productJson.toString());
+
+		ObjectMapper mapper = new ObjectMapper();
+		ProductRequest request = mapper.readValue(productJson, ProductRequest.class);
+
+		LOGGER.debug("request before sending to service Vaue : {}", request.toString());
+		LOGGER.debug("image Vaue : {}", images);
+
+		return ResponseEntity.ok(productService.createProductWithImages(request, images));
+	}
 	  
 	
 
