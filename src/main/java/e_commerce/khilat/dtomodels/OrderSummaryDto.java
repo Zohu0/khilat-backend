@@ -13,14 +13,21 @@ public class OrderSummaryDto {
     private String orderStatus;
     private LocalDateTime createdAt;
     private String email;
+    private String trckngKey;
     
     
     
     
 
-    // getters & setters
+    public String getTrckngKey() {
+		return trckngKey;
+	}
 
-    public Long getOrderId() {
+	public void setTrckngKey(String trckngKey) {
+		this.trckngKey = trckngKey;
+	}
+
+	public Long getOrderId() {
         return orderId;
     }
 

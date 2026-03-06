@@ -24,6 +24,9 @@ public class Order {
 
 	private Long phone;
 
+	@Column(name = "tracking_key", nullable = false, unique = true)
+	private String trackingKey;
+
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "payment_id", referencedColumnName = "id")
 	private Payment payment;
@@ -39,6 +42,10 @@ public class Order {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
+	
+	
+	
+	
 	public Long getDtOfOps() {
 		return dtOfOps;
 	}
@@ -61,6 +68,14 @@ public class Order {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+	
+	public String getTrackingKey() {
+		return trackingKey;
+	}
+
+	public void setTrackingKey(String trackingKey) {
+		this.trackingKey = trackingKey;
 	}
 
 	public Long getPhone() {

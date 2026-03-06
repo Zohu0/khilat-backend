@@ -21,7 +21,7 @@ public class EmailHandler {
 	
 	
 	@Async
-	public void sendEmailtoGuest(String guestEmail, String guestName, Long orderId) {
+	public void sendEmailtoGuest(String guestEmail, String guestName, String trckngKey) {
 		try {
 			SimpleMailMessage message = new SimpleMailMessage();
 
@@ -29,7 +29,7 @@ public class EmailHandler {
 			message.setTo(guestEmail);
 
 			message.setSubject("Order Confirmation - Khilat Store 🎉");
-			String emailContent = "Hi " + (guestName != null ? guestName : "Customer") + "Your Order Id is : " + orderId
+			String emailContent = "Hi " + (guestName != null ? guestName : "Customer") + "Your Order Id is : " + trckngKey
 					+ " ,\n\n" + CommonConstant.EmailMessage;
 			message.setText(emailContent);
 
@@ -40,19 +40,19 @@ public class EmailHandler {
 	}
 
 	@Async
-	public void sendDispatchEmail(String guestEmail, String guestName, Long orderId) {
+	public void sendDispatchEmail(String guestEmail, String guestName, String trckngKey) {
 	    try {
 	        SimpleMailMessage message = new SimpleMailMessage();
 	        message.setFrom(fromEmail);
 	        message.setTo(guestEmail);
-	        message.setSubject("Great News! Your Order #" + orderId + " is Dispatched 🚚");
+	        message.setSubject("Great News! Your Order #" + trckngKey + " is Dispatched 🚚");
 
 	        // 1. Check for null and use 'guestName' (the parameter)
 	        String displayName = (guestName != null) ? guestName : "Customer";
 
 	        
 	        
-	        String content = String.format(CommonConstant.ORDER_DISPATCH_EMAIL_TEMPLATE, displayName, orderId);
+	        String content = String.format(CommonConstant.ORDER_DISPATCH_EMAIL_TEMPLATE, displayName, trckngKey);
 
 	        // 3. Set the text to the message
 	        message.setText(content);
@@ -66,19 +66,19 @@ public class EmailHandler {
 	
 	
 	@Async
-	public void sendCancelEmail(String email, String name, Long orderId) {
+	public void sendCancelEmail(String email, String name, String trckngKey) {
 	    try {
 	        SimpleMailMessage message = new SimpleMailMessage();
 	        message.setFrom(fromEmail);
 	        message.setTo(email);
-	        message.setSubject("Request For Cancellation #" + orderId + " is cancelled 🚚");
+	        message.setSubject("Request For Cancellation #" + trckngKey + " is cancelled 🚚");
 
 	        // 1. Check for null and use 'guestName' (the parameter)
 	        String displayName = (name != null) ? name : "Customer";
 
 	        
 	        
-	        String content = String.format(CommonConstant.ORDER_CANCELLED_EMAIL_TEMPLATE, displayName, orderId);
+	        String content = String.format(CommonConstant.ORDER_CANCELLED_EMAIL_TEMPLATE, displayName, trckngKey);
 
 	        // 3. Set the text to the message
 	        message.setText(content);

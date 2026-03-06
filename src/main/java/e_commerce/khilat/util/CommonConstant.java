@@ -1,11 +1,15 @@
 package e_commerce.khilat.util;
 
+import java.security.SecureRandom;
+
 public class CommonConstant {
 	
 	public static final String SUCCESS = "SUCCESS";
 	public static final String CANCELLED = "CANCELLED";
 	public static final String PENDING = "PENDING";
 	public static final String REFUNDED = "REFUNDED";
+	public static final String ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+    public static final SecureRandom RANDOM = new SecureRandom();
 
 
 

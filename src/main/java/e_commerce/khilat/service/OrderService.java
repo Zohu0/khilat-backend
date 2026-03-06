@@ -113,7 +113,7 @@ public class OrderService {
 		Order order = orderRepository.findByPaymentId(payment.getId())
 				.orElseThrow(() -> new RuntimeException("Payment record not found"));
 
-		Long orderId = order.getId();
+		String trckngKey = order.getTrackingKey();
 
 		order.setCreatedAt(LocalDateTime.now());
 		order.setDtOfOps(DateUtil.dateConverterToLong(order.getCreatedAt()));
@@ -161,7 +161,7 @@ public class OrderService {
 		String guestEmail = order.getEmail();
 		String guestName = order.getName();
 
-		emailHandler.sendEmailtoGuest(guestEmail, guestName, orderId);
+		emailHandler.sendEmailtoGuest(guestEmail, guestName, trckngKey);
 
 		// 7. Cleanup
 		cartItemRepository.deleteAll(cartItems);
@@ -275,35 +275,17 @@ public class OrderService {
 		orderDto.setOrderStatus("DISPATCHED"); // DTO mein status update kiya
 		orderDto.setEmail(order.getEmail());
 		orderDto.setName(order.getName());
-
+		orderDto.setTrckngKey(order.getTrackingKey());
+		
+		
 		order.setStatus(orderDto.getOrderStatus());
 		orderRepository.save(order);
 
-		emailHandler.sendDispatchEmail(orderDto.getEmail(), orderDto.getName(), orderDto.getOrderId());
+		emailHandler.sendDispatchEmail(orderDto.getEmail(), orderDto.getName(), orderDto.getTrckngKey());
 	}
 
-//	@Transactional
-//	public String cancelOrderService(CancelOrderDto request) {
-//
-//		Order order = orderRepository.findById(request.getOrderId())
-//				.orElseThrow(() -> new RuntimeException("Order Id not found"));
-//
-//		// stripe intent id is transaction id in db
-//		Payment payment = paymentRepository.findByTransactionId(order.getPayment().getTransactionId())
-//				.orElseThrow(() -> new RuntimeException("Payment record not found"));
-//		
-//		
-//		
-//
-//		if (order.getStatus().equals(CommonConstant.PENDING)) {
-//			order.setStatus(CommonConstant.CANCELLED);
-//			emailHandler.sendCancelEmail(request.getEmail(), request.getName(), request.getOrderId());
-//			return "Your Order Has Been Cancelled Refund Would be Initiated Soon";
-//		}
-//
-//		return "Order Is Already Dispatched";
-//	}
 
+	
 	
 	
 	
@@ -314,7 +296,7 @@ public class OrderService {
 	    // 1. First, Update and COMMIT the status to CANCELLED
 	    // Using TransactionTemplate forces this to finish and save completely
 	    Boolean updateSuccess = transactionTemplate.execute(status -> {
-	        Order order = orderRepository.findById(request.getOrderId())
+	        Order order = orderRepository.findByTrackingKey(request.getTrckngKey())
 	                .orElseThrow(() -> new RuntimeException("Order Id not found"));
 
 	        if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
@@ -332,14 +314,14 @@ public class OrderService {
 
 	    // 2. NOW that the DB is 100% committed as CANCELLED, call Stripe
 	    try {
-	        Order order = orderRepository.findById(request.getOrderId()).get();
+	        Order order = orderRepository.findByTrackingKey(request.getTrckngKey()).get();
 	        
 	        RefundCreateParams params = RefundCreateParams.builder()
 	                .setPaymentIntent(order.getPayment().getTransactionId())
 	                .build();
 
 	        Refund refund = Refund.create(params);
-	        emailHandler.sendCancelEmail(request.getEmail(), request.getName(), request.getOrderId());
+	        emailHandler.sendCancelEmail(request.getEmail(), request.getName(), request.getTrckngKey());
 
 	        return "Your Order Has Been Cancelled. Refund initiated.";
 
@@ -362,7 +344,6 @@ public class OrderService {
 	    Order order = payment.getOrder();
 	    if (order != null) {
 	        // LOGGING FOR PRODUCTION DEBUGGING
-	        System.out.println("Webhook ID: " + transactionId + " | Current DB Status: " + order.getStatus());
 	        
 	        if (order.getStatus().trim().equalsIgnoreCase(CommonConstant.CANCELLED.trim())) {
 	            order.setStatus(CommonConstant.REFUNDED);

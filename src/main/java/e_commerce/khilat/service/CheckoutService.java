@@ -20,6 +20,7 @@ import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.repository.CartRepo;
 import e_commerce.khilat.repository.OrderRepo;
 import e_commerce.khilat.repository.PaymentRepo;
+import e_commerce.khilat.util.Utility;
 
 @Service
 public class CheckoutService {
@@ -109,6 +110,7 @@ public class CheckoutService {
         order.setEmail(request.getEmail());
         order.setName(request.getName());
         order.setPhone(request.getPhone());
+        order.setTrackingKey(Utility.generateTrackingKey());
         
         order.setPayment(savedPayment);
         

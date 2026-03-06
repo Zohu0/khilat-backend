@@ -2,18 +2,20 @@ package e_commerce.khilat.dtomodels;
 
 public class CancelOrderDto {
 	
-	Long orderId;
+	String trckngKey;
 	
 	String name;
 	
 	String email;
 
-	public Long getOrderId() {
-		return orderId;
+	
+
+	public String getTrckngKey() {
+		return trckngKey;
 	}
 
-	public void setOrderId(Long orderId) {
-		this.orderId = orderId;
+	public void setTrckngKey(String trckngKey) {
+		this.trckngKey = trckngKey;
 	}
 
 	public String getName() {
