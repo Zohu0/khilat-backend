@@ -22,13 +22,15 @@ public interface OrderRepo extends JpaRepository<Order, Long> {
 	
 	Page<Order> findByStatus(String status, Pageable pageable);
 	
-	Page<Order> findByStatusAndDtOfOps(String status,Long dtOfOps, Pageable pageable);
-	
+	Page<Order> findByStatusAndUpdatedDtOfOps(String status,Long UpdatedDtOfOps,Pageable pageable);
 	
 	Page<Order> findByStatusAndCreatedAtBetween(String status, LocalDateTime start, LocalDateTime end, Pageable pageable);	
 	
 	Optional<Order> findByTrackingKey(String trckngKey);
 	
+	Page<Order> findByStatusAndTrackingKey(String status,String trackingKey,Pageable pageable);
+
+	Page<Order> findByStatusAndUpdatedDtOfOpsAndTrackingKey(String status, Long updatedDtOfOps,String trackingKey, Pageable pageable);
 	
 	
 	

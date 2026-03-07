@@ -30,7 +30,7 @@ public class EmailHandler {
 
 			message.setSubject("Order Confirmation - Khilat Store 🎉");
 			String emailContent = "Hi " + (guestName != null ? guestName : "Customer") + "Your Order Id is : " + trckngKey
-					+ " ,\n\n" + CommonConstant.EmailMessage;
+					+ " ,\n\n" + CommonConstant.ORDER_PLACED;
 			message.setText(emailContent);
 
 			mailSender.send(message);
@@ -86,6 +86,33 @@ public class EmailHandler {
 	        mailSender.send(message);
 	    } catch (Exception e) {
 	        System.err.println("Cancel email fail hui: " + e.getMessage());
+	    }
+	}
+	
+	
+
+	@Async
+	public void sendDeliveredEmail(String guestEmail, String guestName, String trckngKey) {
+	    try {
+	        SimpleMailMessage message = new SimpleMailMessage();
+	        message.setFrom(fromEmail);
+	        message.setTo(guestEmail);
+	        message.setSubject("Great News! Your Order #" + trckngKey + " is Delivered 🚚");
+
+	        // 1. Check for null and use 'guestName' (the parameter)
+	        String displayName = (guestName != null) ? guestName : "Customer";
+
+	        
+	        
+	        String content = String.format(CommonConstant.ORDER_DELIVERED_EMAIL_TEMPLATE, displayName, trckngKey);
+
+	        // 3. Set the text to the message
+	        message.setText(content);
+
+	        mailSender.send(message);
+	        System.out.println("Dispatch email sent to: " + guestEmail);
+	    } catch (Exception e) {
+	        System.err.println("Dispatch email fail hui: " + e.getMessage());
 	    }
 	}
 

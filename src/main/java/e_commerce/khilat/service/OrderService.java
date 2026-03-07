@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.management.RuntimeErrorException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -22,7 +24,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
-
 
 import com.stripe.model.PaymentIntent;
 
@@ -68,7 +69,7 @@ public class OrderService {
 
 	@Autowired
 	private PaymentRepo paymentRepository;
-	
+
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 	@Autowired
@@ -120,7 +121,9 @@ public class OrderService {
 		order.setCreatedAt(LocalDateTime.now());
 		order.setDtOfOps(DateUtil.dateConverterToLong(order.getCreatedAt()));
 
-		order.setStatus("PENDING");
+		order.setStatus(CommonConstant.PENDING);
+		order.setUpdatedAt(LocalDateTime.now());
+		order.setUpdatedDtOfOps(DateUtil.dateConverterToLong(order.getUpdatedAt()));
 
 		order.setTotalAmount(payment.getAmount());
 
@@ -184,7 +187,7 @@ public class OrderService {
 		response.setStatus(order.getStatus());
 		response.setTrackingKey(order.getTrackingKey());
 
-				Payment payment = order.getPayment();
+		Payment payment = order.getPayment();
 
 		if (payment != null) {
 			PaymentDto pmtDto = new PaymentDto();
@@ -195,7 +198,7 @@ public class OrderService {
 			response.setPayment(pmtDto);
 		}
 
-				List<OrderItem> orderItems = orderItemRepo.findByOrderId(orderId);
+		List<OrderItem> orderItems = orderItemRepo.findByOrderId(orderId);
 
 		List<OrderItemDto> itemDtos = orderItems.stream().map(item -> {
 			OrderItemDto dto = new OrderItemDto();
@@ -237,152 +240,146 @@ public class OrderService {
 		return response; // Successfully returns the type OrderDto
 	}
 
-	@Cacheable(value = "orders", key = "#status + '-' + #date + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-	public Page<OrderSummaryDto> getOrderSummaries(String status, Long date, Pageable pageable) {
+	@Cacheable(value = "orders", key = "#status + '-' + #date + '-' + #trckngKey + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+	public Page<OrderSummaryDto> getOrderSummaries(String status, Long date, String trckngKey, Pageable pageable) {
 
-//		Page<Order> ordersPage;
-//
-//		if (date != null) {
-//			ordersPage = orderRepository.findByStatusAndDtOfOps(status, date, pageable);
-//		} else {
-//			ordersPage = orderRepository.findByStatus(status, pageable);
-//		}
-//
-//		return ordersPage.map(order -> {
-//			OrderSummaryDto dto = new OrderSummaryDto();
-//			dto.setOrderId(order.getId());
-//			dto.setName(order.getName());
-//			dto.setPhone(order.getPhone());
-//			dto.setAmount(order.getTotalAmount());
-//			dto.setOrderStatus(order.getStatus());
-//			dto.setCreatedAt(order.getCreatedAt());
-//			dto.setTrckngKey(order.getTrackingKey());
-//
-//			paymentRepository.findByOrderId(order.getId()).ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
-//
-//			return dto;
-//		});
-		
 		// 1. Fetch the data
-	    Page<Order> ordersPage = (date != null) 
-	        ? orderRepository.findByStatusAndDtOfOps(status, date, pageable) 
-	        : orderRepository.findByStatus(status, pageable);
+		Page<Order> ordersPage;
 
-	    List<OrderSummaryDto> dtoList = new ArrayList<>();
-
-	    // 2. Simple for-each loop instead of .map()
-	    for (Order order : ordersPage) {
-	        OrderSummaryDto dto = new OrderSummaryDto();
-	        dto.setOrderId(order.getId());
-	        dto.setName(order.getName());
-	        dto.setPhone(order.getPhone());
-	        dto.setAmount(order.getTotalAmount());
-	        dto.setOrderStatus(order.getStatus());
-	        dto.setCreatedAt(order.getCreatedAt());
-	        dto.setTrckngKey(order.getTrackingKey());
-
-	        // Get payment status simply
-	        paymentRepository.findByOrderId(order.getId())
-	            .ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
-
-	        dtoList.add(dto);
+		if (date != null && trckngKey != null && !trckngKey.isEmpty()) {
+	        // status + date + trackingKey
+	        ordersPage = orderRepository.findByStatusAndUpdatedDtOfOpsAndTrackingKey(status, date, trckngKey, pageable);
+	    }
+	    else if (trckngKey != null && !trckngKey.isEmpty()) {
+	        // status + trackingKey
+	        ordersPage = orderRepository.findByStatusAndTrackingKey(status, trckngKey, pageable);
+	    }
+	    else if (date != null) {
+	        // status + date
+	        ordersPage = orderRepository.findByStatusAndUpdatedDtOfOps(status, date, pageable);
+	    }
+	    else {
+	        // status only
+	        ordersPage = orderRepository.findByStatus(status, pageable);
 	    }
 
-	    // 3. Return as a Page object again
-	    return new PageImpl<>(dtoList, pageable, ordersPage.getTotalElements());
-	
+
+		List<OrderSummaryDto> dtoList = new ArrayList<>();
+
+		// 2. Simple for-each loop instead of .map()
+		for (Order order : ordersPage) {
+			OrderSummaryDto dto = new OrderSummaryDto();
+			dto.setOrderId(order.getId());
+			dto.setName(order.getName());
+			dto.setPhone(order.getPhone());
+			dto.setAmount(order.getTotalAmount());
+			dto.setOrderStatus(order.getStatus());
+			dto.setCreatedAt(order.getCreatedAt());
+			dto.setTrckngKey(order.getTrackingKey());
+
+			// Get payment status simply
+			paymentRepository.findByOrderId(order.getId()).ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+
+			dtoList.add(dto);
+		}
+
+		// 3. Return as a Page object again
+		return new PageImpl<>(dtoList, pageable, ordersPage.getTotalElements());
+
 	}
-	
-	
-	
-	
-
-//	@Transactional
-//	@Caching(evict = { @CacheEvict(value = "orders", allEntries = true),
-//			@CacheEvict(value = "orderItems", allEntries = true) })
-//	public void markOrderAsDispatched(Long orderId) {
-//		// 1. Order ko DB se find karein
-//		Order order = orderRepository.findById(orderId)
-//				.orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
-//
-//		OrderSummaryDto orderDto = new OrderSummaryDto();
-//		orderDto.setOrderId(order.getId());
-//		orderDto.setOrderStatus("DISPATCHED"); // DTO mein status update kiya
-//		orderDto.setEmail(order.getEmail());
-//		orderDto.setName(order.getName());
-//		orderDto.setTrckngKey(order.getTrackingKey());
-//		
-//		
-//		order.setStatus(orderDto.getOrderStatus());
-//		orderRepository.save(order);
-//
-//		emailHandler.sendDispatchEmail(orderDto.getEmail(), orderDto.getName(), orderDto.getTrckngKey());
-//	}
-
-
-	
-	
-	
-	
-
-	
 
 	public String cancelOrderService(CancelOrderDto request) {
-	    // 1. First, Update and COMMIT the status to CANCELLED
-	    // Using TransactionTemplate forces this to finish and save completely
-	    Boolean updateSuccess = transactionTemplate.execute(status -> {
-	        Order order = orderRepository.findByTrackingKey(request.getTrckngKey())
-	                .orElseThrow(() -> new RuntimeException("Order Id not found"));
+		// 1. First, Update and COMMIT the status to CANCELLED
+		// Using TransactionTemplate forces this to finish and save completely
+		Boolean updateSuccess = transactionTemplate.execute(status -> {
+			Order order = orderRepository.findByTrackingKey(request.getTrckngKey())
+					.orElseThrow(() -> new RuntimeException("Order Id not found"));
 
-	        if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
-	            return false;
-	        }
+			if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
+				return false;
+			}
 
-	        order.setStatus(CommonConstant.CANCELLED);
-	        orderRepository.save(order);
-	        return true; 
-	    });
+			order.setStatus(CommonConstant.CANCELLED);
+			order.setUpdatedAt(LocalDateTime.now());
+			order.setUpdatedDtOfOps(DateUtil.dateConverterToLong(order.getUpdatedAt()));
+			orderRepository.save(order);
+			return true;
+		});
 
-	    if (Boolean.FALSE.equals(updateSuccess)) {
-	        return "Order cannot be cancelled.";
-	    }
+		if (Boolean.FALSE.equals(updateSuccess)) {
+			return "Order cannot be cancelled.";
+		}
 
-	    // 2. NOW that the DB is 100% committed as CANCELLED, call Stripe
-	    try {
-	        Order order = orderRepository.findByTrackingKey(request.getTrckngKey()).get();
-	        
-	        RefundCreateParams params = RefundCreateParams.builder()
-	                .setPaymentIntent(order.getPayment().getTransactionId())
-	                .build();
+		// 2. NOW that the DB is 100% committed as CANCELLED, call Stripe
+		try {
+			Order order = orderRepository.findByTrackingKey(request.getTrckngKey()).get();
 
-	        Refund refund = Refund.create(params);
-	        emailHandler.sendCancelEmail(request.getEmail(), request.getName(), request.getTrckngKey());
+			RefundCreateParams params = RefundCreateParams.builder()
+					.setPaymentIntent(order.getPayment().getTransactionId()).build();
 
-	        return "Your Order Has Been Cancelled. Refund initiated.";
+			Refund refund = Refund.create(params);
+			emailHandler.sendCancelEmail(request.getEmail(), request.getName(), request.getTrckngKey());
 
-	    } catch (Exception e) {
-	        // NOTE: If Stripe fails here, you might want to revert the status to PENDING 
-	        // or log it for manual intervention, as the CANCELLED status is already committed.
-	        throw new RuntimeException("Refund failed: " + e.getMessage());
-	    }
+			return "Your Order Has Been Cancelled. Refund initiated.";
+
+		} catch (Exception e) {
+			// NOTE: If Stripe fails here, you might want to revert the status to PENDING
+			// or log it for manual intervention, as the CANCELLED status is already
+			// committed.
+			throw new RuntimeException("Refund failed: " + e.getMessage());
+		}
 	}
-	
-	
-	
+
 	@Transactional
 	public void updatePaymentStatusToRefunded(String transactionId) {
-	    Payment payment = paymentRepository.findByTransactionId(transactionId)
-	            .orElseThrow(() -> new RuntimeException("Payment not found"));
+		Payment payment = paymentRepository.findByTransactionId(transactionId)
+				.orElseThrow(() -> new RuntimeException("Payment not found"));
 
-	    payment.setStatus(CommonConstant.REFUNDED);
+		payment.setStatus(CommonConstant.REFUNDED);
 
-	    Order order = payment.getOrder();
-	    if (order != null) {
-	        // LOGGING FOR PRODUCTION DEBUGGING
-	        
-	        if (order.getStatus().trim().equalsIgnoreCase(CommonConstant.CANCELLED.trim())) {
-	            order.setStatus(CommonConstant.REFUNDED);
-	        }
-	    }
+		Order order = payment.getOrder();
+		if (order != null) {
+			// LOGGING FOR PRODUCTION DEBUGGING
+
+			if (order.getStatus().trim().equalsIgnoreCase(CommonConstant.CANCELLED.trim())) {
+				order.setStatus(CommonConstant.REFUNDED);
+				order.setUpdatedAt(LocalDateTime.now());
+				order.setUpdatedDtOfOps(DateUtil.dateConverterToLong(order.getUpdatedAt()));
+			}
+		}
+	}
+
+	@Transactional
+	public void markOrderAsDispatched(Long orderId) {
+		// 1. Order ko DB se find karein
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+		// 2. Status update karein
+		order.setStatus(CommonConstant.DISPATCHED);
+		order.setUpdatedAt(LocalDateTime.now());
+		order.setUpdatedDtOfOps(DateUtil.dateConverterToLong(order.getUpdatedAt()));
+		orderRepository.save(order);
+
+		// 3. User ko Dispatch ka email bhejein
+		emailHandler.sendDispatchEmail(order.getEmail(), order.getName(), order.getTrackingKey());
+	}
+
+	@Transactional
+	public void markOrderAsDelivered(Long orderId) {
+
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+		if (!CommonConstant.DISPATCHED.equals(order.getStatus())) {
+			throw new RuntimeException("Order is not in dispatched state. Current status: " + order.getStatus());
+		}
+
+		order.setStatus(CommonConstant.DELIVERED);
+		order.setUpdatedAt(LocalDateTime.now());
+		order.setUpdatedDtOfOps(DateUtil.dateConverterToLong(order.getUpdatedAt()));
+		orderRepository.save(order);
+
+		emailHandler.sendDeliveredEmail(order.getEmail(), order.getName(), order.getTrackingKey());
 	}
 }

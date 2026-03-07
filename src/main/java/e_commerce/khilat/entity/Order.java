@@ -41,11 +41,21 @@ public class Order {
 
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
+	
+	
+	@Column(name = "updated_dt_of_ops")
+	private Long updatedDtOfOps;
+
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
+	
+	
+	
+	
 
 	
-	
-	
-	
+
+
 	public Long getDtOfOps() {
 		return dtOfOps;
 	}
@@ -141,11 +151,30 @@ public class Order {
 	public void setPayment(Payment payment) {
 		this.payment = payment;
 	}
+	
+	public Long getUpdatedDtOfOps() {
+		return updatedDtOfOps;
+	}
+
+	public void setUpdatedDtOfOps(Long updatedDtOfOps) {
+		this.updatedDtOfOps = updatedDtOfOps;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
 
 	@Override
 	public String toString() {
-		return "Order [id=" + id + ", totalAmount=" + totalAmount + ", status=" + status + ", createdAt=" + createdAt
-				+ "]";
+		return "Order [id=" + id + ", guestId=" + guestId + ", email=" + email + ", name=" + name + ", address="
+				+ address + ", phone=" + phone + ", trackingKey=" + trackingKey + ", payment=" + payment + ", status="
+				+ status + ", totalAmount=" + totalAmount + ", dtOfOps=" + dtOfOps + ", createdAt=" + createdAt
+				+ ", updatedDtOfOps=" + updatedDtOfOps + ", updatedAt=" + updatedAt + "]";
 	}
+
 
 }
