@@ -4,11 +4,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import e_commerce.khilat.entity.Payment;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+
 
 public class OrderDto {
 	
@@ -19,13 +22,9 @@ public class OrderDto {
 	
 	private PaymentDto payment; // SAHI: DTO ke andar DTO hi hona chahiye
 	
-	public UUID getGuestId() {
-		return guestId;
-	}
-
-	public void setGuestId(UUID guestId) {
-		this.guestId = guestId;
-	}
+	private String trackingKey;
+	
+	
 
 	private String email;
     
@@ -44,6 +43,25 @@ public class OrderDto {
 	private List<OrderItemDto> items;
 	
 	
+	
+	
+	
+	
+	public String getTrackingKey() {
+		return trackingKey;
+	}
+
+	public void setTrackingKey(String trackingKey) {
+		this.trackingKey = trackingKey;
+	}
+
+	public UUID getGuestId() {
+		return guestId;
+	}
+
+	public void setGuestId(UUID guestId) {
+		this.guestId = guestId;
+	}
     
     public String getStatus() {
 		return status;

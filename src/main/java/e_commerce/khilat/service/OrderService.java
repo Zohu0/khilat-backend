@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -180,9 +182,9 @@ public class OrderService {
 		response.setName(order.getName());
 		response.setPhone(order.getPhone());
 		response.setStatus(order.getStatus());
+		response.setTrackingKey(order.getTrackingKey());
 
-		// Payment Repository call ki zaroorat nahi agar mapping sahi hai
-		Payment payment = order.getPayment();
+				Payment payment = order.getPayment();
 
 		if (payment != null) {
 			PaymentDto pmtDto = new PaymentDto();
@@ -193,8 +195,7 @@ public class OrderService {
 			response.setPayment(pmtDto);
 		}
 
-		// Fetch and Map Order Items
-		List<OrderItem> orderItems = orderItemRepo.findByOrderId(orderId);
+				List<OrderItem> orderItems = orderItemRepo.findByOrderId(orderId);
 
 		List<OrderItemDto> itemDtos = orderItems.stream().map(item -> {
 			OrderItemDto dto = new OrderItemDto();
@@ -207,7 +208,7 @@ public class OrderService {
 
 			if (variant != null) {
 				dto.setSize(variant.getSize());
-				dto.setStockLeft(variant.getStock());
+//				dto.setStockLeft(variant.getStock());
 
 				Product product = variant.getProduct();
 				if (product != null) {
@@ -239,50 +240,84 @@ public class OrderService {
 	@Cacheable(value = "orders", key = "#status + '-' + #date + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
 	public Page<OrderSummaryDto> getOrderSummaries(String status, Long date, Pageable pageable) {
 
-		Page<Order> ordersPage;
-
-		if (date != null) {
-			ordersPage = orderRepository.findByStatusAndDtOfOps(status, date, pageable);
-		} else {
-			ordersPage = orderRepository.findByStatus(status, pageable);
-		}
-
-		return ordersPage.map(order -> {
-			OrderSummaryDto dto = new OrderSummaryDto();
-			dto.setOrderId(order.getId());
-			dto.setName(order.getName());
-			dto.setPhone(order.getPhone());
-			dto.setAmount(order.getTotalAmount());
-			dto.setOrderStatus(order.getStatus());
-			dto.setCreatedAt(order.getCreatedAt());
-
-			paymentRepository.findByOrderId(order.getId()).ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
-
-			return dto;
-		});
-	}
-
-	@Transactional
-	@Caching(evict = { @CacheEvict(value = "orders", allEntries = true),
-			@CacheEvict(value = "orderItems", allEntries = true) })
-	public void markOrderAsDispatched(Long orderId) {
-		// 1. Order ko DB se find karein
-		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
-
-		OrderSummaryDto orderDto = new OrderSummaryDto();
-		orderDto.setOrderId(order.getId());
-		orderDto.setOrderStatus("DISPATCHED"); // DTO mein status update kiya
-		orderDto.setEmail(order.getEmail());
-		orderDto.setName(order.getName());
-		orderDto.setTrckngKey(order.getTrackingKey());
+//		Page<Order> ordersPage;
+//
+//		if (date != null) {
+//			ordersPage = orderRepository.findByStatusAndDtOfOps(status, date, pageable);
+//		} else {
+//			ordersPage = orderRepository.findByStatus(status, pageable);
+//		}
+//
+//		return ordersPage.map(order -> {
+//			OrderSummaryDto dto = new OrderSummaryDto();
+//			dto.setOrderId(order.getId());
+//			dto.setName(order.getName());
+//			dto.setPhone(order.getPhone());
+//			dto.setAmount(order.getTotalAmount());
+//			dto.setOrderStatus(order.getStatus());
+//			dto.setCreatedAt(order.getCreatedAt());
+//			dto.setTrckngKey(order.getTrackingKey());
+//
+//			paymentRepository.findByOrderId(order.getId()).ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+//
+//			return dto;
+//		});
 		
-		
-		order.setStatus(orderDto.getOrderStatus());
-		orderRepository.save(order);
+		// 1. Fetch the data
+	    Page<Order> ordersPage = (date != null) 
+	        ? orderRepository.findByStatusAndDtOfOps(status, date, pageable) 
+	        : orderRepository.findByStatus(status, pageable);
 
-		emailHandler.sendDispatchEmail(orderDto.getEmail(), orderDto.getName(), orderDto.getTrckngKey());
+	    List<OrderSummaryDto> dtoList = new ArrayList<>();
+
+	    // 2. Simple for-each loop instead of .map()
+	    for (Order order : ordersPage) {
+	        OrderSummaryDto dto = new OrderSummaryDto();
+	        dto.setOrderId(order.getId());
+	        dto.setName(order.getName());
+	        dto.setPhone(order.getPhone());
+	        dto.setAmount(order.getTotalAmount());
+	        dto.setOrderStatus(order.getStatus());
+	        dto.setCreatedAt(order.getCreatedAt());
+	        dto.setTrckngKey(order.getTrackingKey());
+
+	        // Get payment status simply
+	        paymentRepository.findByOrderId(order.getId())
+	            .ifPresent(p -> dto.setPaymentStatus(p.getStatus()));
+
+	        dtoList.add(dto);
+	    }
+
+	    // 3. Return as a Page object again
+	    return new PageImpl<>(dtoList, pageable, ordersPage.getTotalElements());
+	
 	}
+	
+	
+	
+	
+
+//	@Transactional
+//	@Caching(evict = { @CacheEvict(value = "orders", allEntries = true),
+//			@CacheEvict(value = "orderItems", allEntries = true) })
+//	public void markOrderAsDispatched(Long orderId) {
+//		// 1. Order ko DB se find karein
+//		Order order = orderRepository.findById(orderId)
+//				.orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+//
+//		OrderSummaryDto orderDto = new OrderSummaryDto();
+//		orderDto.setOrderId(order.getId());
+//		orderDto.setOrderStatus("DISPATCHED"); // DTO mein status update kiya
+//		orderDto.setEmail(order.getEmail());
+//		orderDto.setName(order.getName());
+//		orderDto.setTrckngKey(order.getTrackingKey());
+//		
+//		
+//		order.setStatus(orderDto.getOrderStatus());
+//		orderRepository.save(order);
+//
+//		emailHandler.sendDispatchEmail(orderDto.getEmail(), orderDto.getName(), orderDto.getTrckngKey());
+//	}
 
 
 	
