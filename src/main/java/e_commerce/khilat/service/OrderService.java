@@ -91,6 +91,7 @@ public class OrderService {
 	@Autowired
 	private EmailHandler emailHandler;
 
+	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
 	@Transactional
 	public void createOrderAfterPayment(PaymentIntent intent) {
 		// 1. Get Payment record from DB to update its status later
@@ -173,6 +174,8 @@ public class OrderService {
 		cartRepository.delete(cart);
 	}
 
+	
+	@Cacheable(value = "orderDetail", key = "#orderId")
 	public OrderDto getOrderDetail(Long orderId) {
 
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
@@ -266,6 +269,7 @@ public class OrderService {
 
 		List<OrderSummaryDto> dtoList = new ArrayList<>();
 
+
 		// 2. Simple for-each loop instead of .map()
 		for (Order order : ordersPage) {
 			OrderSummaryDto dto = new OrderSummaryDto();
@@ -274,7 +278,8 @@ public class OrderService {
 			dto.setPhone(order.getPhone());
 			dto.setAmount(order.getTotalAmount());
 			dto.setOrderStatus(order.getStatus());
-			dto.setCreatedAt(order.getCreatedAt());
+			dto.setDtOfOps(order.getDtOfOps());
+			dto.setUpdatedDtOfOps(order.getUpdatedDtOfOps());
 			dto.setTrckngKey(order.getTrackingKey());
 
 			// Get payment status simply
@@ -288,6 +293,7 @@ public class OrderService {
 
 	}
 
+	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
 	public String cancelOrderService(CancelOrderDto request) {
 		// 1. First, Update and COMMIT the status to CANCELLED
 		// Using TransactionTemplate forces this to finish and save completely
@@ -330,6 +336,7 @@ public class OrderService {
 		}
 	}
 
+	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
 	@Transactional
 	public void updatePaymentStatusToRefunded(String transactionId) {
 		Payment payment = paymentRepository.findByTransactionId(transactionId)
@@ -349,6 +356,7 @@ public class OrderService {
 		}
 	}
 
+	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
 	@Transactional
 	public void markOrderAsDispatched(Long orderId) {
 		// 1. Order ko DB se find karein
@@ -365,6 +373,7 @@ public class OrderService {
 		emailHandler.sendDispatchEmail(order.getEmail(), order.getName(), order.getTrackingKey());
 	}
 
+	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
 	@Transactional
 	public void markOrderAsDelivered(Long orderId) {
 

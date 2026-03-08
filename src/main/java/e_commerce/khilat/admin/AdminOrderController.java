@@ -72,6 +72,8 @@ public class AdminOrderController {
 		
 		LOGGER.debug("trckng key for order Value : {}", trckngKey);
 		LOGGER.debug("trckng key for order Value : {}", status);
+		LOGGER.debug("trckng key for order Value : {}", date);
+
 		
 
 	    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());

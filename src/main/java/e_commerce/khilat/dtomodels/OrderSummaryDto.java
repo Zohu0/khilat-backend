@@ -3,6 +3,8 @@ package e_commerce.khilat.dtomodels;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+
 public class OrderSummaryDto {
 
     private Long orderId;
@@ -11,9 +13,28 @@ public class OrderSummaryDto {
     private BigDecimal amount;
     private String paymentStatus;
     private String orderStatus;
-    private LocalDateTime createdAt;
     private String email;
     private String trckngKey;
+    
+	private Long dtOfOps;
+
+	public Long getDtOfOps() {
+		return dtOfOps;
+	}
+
+	public void setDtOfOps(Long dtOfOps) {
+		this.dtOfOps = dtOfOps;
+	}
+
+	public Long getUpdatedDtOfOps() {
+		return updatedDtOfOps;
+	}
+
+	public void setUpdatedDtOfOps(Long updatedDtOfOps) {
+		this.updatedDtOfOps = updatedDtOfOps;
+	}
+
+	private Long updatedDtOfOps;
     
     
     
@@ -84,11 +105,4 @@ public class OrderSummaryDto {
         this.orderStatus = orderStatus;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }

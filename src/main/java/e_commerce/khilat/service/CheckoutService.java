@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import com.stripe.exception.StripeException;
@@ -54,7 +55,7 @@ public class CheckoutService {
     
     
     
-    
+    @CacheEvict(value = {"orders", "payments"}, allEntries = true)
     public CheckoutResponse createPaymentIntent(CheckoutRequest request) throws StripeException {
     	
     	
