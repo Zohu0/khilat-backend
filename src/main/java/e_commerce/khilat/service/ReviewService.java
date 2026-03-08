@@ -3,6 +3,7 @@ package e_commerce.khilat.service;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import e_commerce.khilat.dtomodels.ReviewMessageDto;
@@ -19,7 +20,7 @@ public class ReviewService {
 	private ReviewRepo reviewRepo;
 	
 	
-	
+	@CacheEvict(value = { "productsDetail" }, allEntries = true)
 	public void postReviewMsgService(ReviewMessageDto request) {
 		
 		ReviewMessage reviewMessage = new ReviewMessage();
