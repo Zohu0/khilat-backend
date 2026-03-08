@@ -70,9 +70,9 @@ public class AdminOrderController {
 	        @RequestParam(defaultValue = "0") int page,
 	        @RequestParam(defaultValue = "10") int size) {
 		
-		LOGGER.debug("trckng key for order Value : {}", trckngKey);
-		LOGGER.debug("trckng key for order Value : {}", status);
-		LOGGER.debug("trckng key for order Value : {}", date);
+//		LOGGER.debug("trckng key for order Value : {}", trckngKey);
+//		LOGGER.debug("trckng key for order Value : {}", status);
+//		LOGGER.debug("trckng key for order Value : {}", date);
 
 		
 

@@ -20,9 +20,11 @@ import e_commerce.khilat.entity.Category;
 import e_commerce.khilat.entity.Product;
 import e_commerce.khilat.entity.ProductImage;
 import e_commerce.khilat.entity.ProductVariant;
+import e_commerce.khilat.entity.ReviewMessage;
 import e_commerce.khilat.repository.CategoryRepo;
 import e_commerce.khilat.repository.ProductRepo;
 import e_commerce.khilat.repository.ProductVariantRepo;
+import e_commerce.khilat.repository.ReviewRepo;
 import e_commerce.khilat.util.DateUtil;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,9 @@ public class ProductService {
 	private CategoryRepo categoryRepo;
 
 	@Autowired
+	private ReviewRepo reviewRepo;
+
+	@Autowired
 	private ProductImageService productImageService;
 
 	@Transactional(readOnly = true)
@@ -65,6 +70,8 @@ public class ProductService {
 		Product product = productRepo.findById(id)
 				.orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
+		List<ReviewMessage> reviewResponse = reviewRepo.findByProductId(id);
+
 		ProductRequest response = new ProductRequest();
 
 		response.setCategory(product.getCategory());
@@ -74,6 +81,7 @@ public class ProductService {
 		response.setTrending(product.getTrending());
 		response.setProductImages(product.getProductImages());
 		response.setVariants(product.getVariants());
+		response.setReviews(reviewResponse);
 
 		return response;
 	}

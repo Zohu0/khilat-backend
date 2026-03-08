@@ -189,6 +189,8 @@ public class OrderService {
 		response.setPhone(order.getPhone());
 		response.setStatus(order.getStatus());
 		response.setTrackingKey(order.getTrackingKey());
+		
+		
 
 		Payment payment = order.getPayment();
 

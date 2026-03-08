@@ -105,7 +105,7 @@ public class AdminProductController {
 	
 	
 
-	@CacheEvict(value = "products", allEntries = true)
+	
 	@PostMapping(value = "/updateproduct/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Product> updateProductWithImages(@PathVariable Long productId,
 			@RequestPart("product") String productJson,

@@ -7,21 +7,31 @@ import java.util.List;
 import e_commerce.khilat.entity.Category;
 import e_commerce.khilat.entity.ProductImage;
 import e_commerce.khilat.entity.ProductVariant;
+import e_commerce.khilat.entity.ReviewMessage;
 
 public class ProductRequest {
 
 	private Long categoryId;
 
+	public List<ReviewMessage> getReviews() {
+		return reviews;
+	}
+
+	public void setReviews(List<ReviewMessage> reviews) {
+		this.reviews = reviews;
+	}
+
 	private Category category;
 	private String name;
 	private String description;
-//	private BigDecimal price;
-//	private Integer stock;
+
 	private List<ProductVariant> variants;
 	private String trending; // 'y' or 'n'
 	private Boolean isActive;
 
 	private List<ProductImage> productImages = new ArrayList<>();
+	
+	private List<ReviewMessage> reviews;
 
 	public List<ProductImage> getProductImages() {
 		return productImages;
@@ -47,21 +57,7 @@ public class ProductRequest {
 		this.description = description;
 	}
 
-//	public BigDecimal getPrice() {
-//		return price;
-//	}
-//
-//	public void setPrice(BigDecimal price) {
-//		this.price = price;
-//	}
-//
-//	public Integer getStock() {
-//		return stock;
-//	}
-//
-//	public void setStock(Integer stock) {
-//		this.stock = stock;
-//	}
+
 
 	public String getTrending() {
 		return trending;
