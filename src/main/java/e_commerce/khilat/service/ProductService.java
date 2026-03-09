@@ -70,10 +70,11 @@ public class ProductService {
 		Product product = productRepo.findById(id)
 				.orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
-		List<ReviewMessage> reviewResponse = reviewRepo.findByProductId(id);
+		List<ReviewMessage> reviewResponse = reviewRepo.findTop5ByProductIdOrderByIdDesc(id);
 
+//		LOGGER.debug("review result from db: {}",reviewResponse);
+		
 		ProductRequest response = new ProductRequest();
-
 		response.setCategory(product.getCategory());
 		response.setCategoryId(product.getCategory().getId());
 		response.setDescription(product.getDescription());
@@ -81,6 +82,7 @@ public class ProductService {
 		response.setTrending(product.getTrending());
 		response.setProductImages(product.getProductImages());
 		response.setVariants(product.getVariants());
+		
 		response.setReviews(reviewResponse);
 
 		return response;

@@ -20,7 +20,8 @@ public class ReviewService {
 	private ReviewRepo reviewRepo;
 	
 	
-	@CacheEvict(value = { "productsDetail" }, allEntries = true)
+//	@CacheEvict(value = { "productsDetail", }, allEntries = true)
+	@CacheEvict(value = "productDetail", key = "#review.productId", allEntries = true)
 	public void postReviewMsgService(ReviewMessageDto request) {
 		
 		ReviewMessage reviewMessage = new ReviewMessage();

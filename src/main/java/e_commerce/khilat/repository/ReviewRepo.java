@@ -10,7 +10,9 @@ import e_commerce.khilat.entity.ReviewMessage;
 @Repository
 public interface ReviewRepo extends JpaRepository<ReviewMessage, Long> {
 	
-	List<ReviewMessage> findByProductId(Long id);
+	
+	
+	List<ReviewMessage> findTop5ByProductIdOrderByIdDesc(Long id);
 	
 	
 	

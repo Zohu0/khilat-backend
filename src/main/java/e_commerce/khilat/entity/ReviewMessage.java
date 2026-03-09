@@ -109,6 +109,14 @@ public class ReviewMessage {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
+
+
+
+	@Override
+	public String toString() {
+		return "ReviewMessage [id=" + id + ", productId=" + productId + ", reviewerName=" + reviewerName
+				+ ", reviewMsg=" + reviewMsg + ", rating=" + rating + ", createdAt=" + createdAt + "]";
+	}
     
     
 }
