@@ -99,24 +99,20 @@ public class ProductController {
 	    }
 	
 	
-	@PostMapping(value = "/cancel-order")
-	public ResponseEntity<Product> cancelOrder(@RequestPart("product") String productJson,
-			@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
-		
-		System.out.println("process started of saving product with image");
-		LOGGER.debug("process started of saving product with image");
-
-		LOGGER.debug("productJSon Vaue : {}", productJson.toString());
-
-		ObjectMapper mapper = new ObjectMapper();
-		ProductRequest request = mapper.readValue(productJson, ProductRequest.class);
-
-		LOGGER.debug("request before sending to service Vaue : {}", request.toString());
-		LOGGER.debug("image Vaue : {}", images);
-
-		return ResponseEntity.ok(productService.createProductWithImages(request, images));
-	}
-	  
+//	@PostMapping(value = "/cancel-order")
+//	public ResponseEntity<Product> cancelOrder(@RequestPart("product") String productJson,
+//			@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
+//		
+//
+//		ObjectMapper mapper = new ObjectMapper();
+//		ProductRequest request = mapper.readValue(productJson, ProductRequest.class);
+//
+//		LOGGER.debug("request before sending to service Vaue : {}", request.toString());
+//		LOGGER.debug("image Vaue : {}", images);
+//
+//		return ResponseEntity.ok(productService.createProductWithImages(request, images));
+//	}
+//	  
 	
 
 }

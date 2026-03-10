@@ -34,6 +34,7 @@ import e_commerce.khilat.entity.OrderItem;
 import e_commerce.khilat.entity.Payment;
 import e_commerce.khilat.entity.Product;
 import e_commerce.khilat.entity.ProductVariant;
+import e_commerce.khilat.ourexception.OrderProcessingException;
 import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.repository.CartRepo;
 import e_commerce.khilat.repository.OrderItemRepo;
@@ -49,6 +50,7 @@ import e_commerce.khilat.dtomodels.CancelOrderDto;
 import e_commerce.khilat.dtomodels.OrderDto;
 import e_commerce.khilat.dtomodels.OrderItemDto;
 import e_commerce.khilat.dtomodels.OrderSummaryDto;
+import e_commerce.khilat.dtomodels.OrderTrackingResponseDto;
 import e_commerce.khilat.dtomodels.PaymentDto;
 import e_commerce.khilat.dtomodels.ProductSummaryDto;
 
@@ -303,9 +305,10 @@ public class OrderService {
 			Order order = orderRepository.findByTrackingKey(request.getTrckngKey())
 					.orElseThrow(() -> new RuntimeException("Order Id not found"));
 
-			if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
-				return false;
-			}
+			// Validate status - NO try/catch here!
+	        if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
+	            throw new OrderProcessingException("Order is " + order.getStatus() + " and cannot be cancelled.");
+	        }
 
 			order.setStatus(CommonConstant.CANCELLED);
 			order.setUpdatedAt(LocalDateTime.now());
@@ -393,4 +396,18 @@ public class OrderService {
 
 		emailHandler.sendDeliveredEmail(order.getEmail(), order.getName(), order.getTrackingKey());
 	}
+	
+	public OrderTrackingResponseDto getOrderUpdate(String trackingKey) {
+		
+		Order order = orderRepository.findByTrackingKey(trackingKey) .orElseThrow(() ->new RuntimeException("order not found with key:"+trackingKey));
+			
+		OrderTrackingResponseDto response = new OrderTrackingResponseDto();
+		
+		response.setStatus(order.getStatus());
+//		response.setTrackingKey(order.getTrackingKey());
+		
+		return response;
+	
+	}
+	
 }
