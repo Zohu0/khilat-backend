@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import com.stripe.model.PaymentIntent;
 import e_commerce.khilat.dtomodels.CheckoutRequest;
 import e_commerce.khilat.dtomodels.CheckoutResponse;
 import e_commerce.khilat.dtomodels.OrderDto;
+import e_commerce.khilat.dtomodels.OrderRequest;
 import e_commerce.khilat.entity.Cart;
 import e_commerce.khilat.entity.CartItem;
 import e_commerce.khilat.entity.Order;
@@ -26,6 +29,12 @@ import e_commerce.khilat.util.Utility;
 @Service
 public class CheckoutService {
 	
+	@Value("${razorpay.key.id}")
+    private String keyId;
+
+    @Value("${razorpay.key.secret}")
+    private String keySecret;
+	
 	
 
     private final CartRepo cartRepo;
@@ -38,6 +47,9 @@ public class CheckoutService {
     
     private final OrderRepo orderRepo;
 
+    @Autowired							
+    private RazorpayPaymentService razorpayPaymentService;
+    
     public CheckoutService(
             CartRepo cartRepo,
             CartItemRepo cartItemRepo,
@@ -56,7 +68,7 @@ public class CheckoutService {
     
     
     @CacheEvict(value = {"orders", "payments"}, allEntries = true)
-    public CheckoutResponse createPaymentIntent(CheckoutRequest request) throws StripeException {
+    public CheckoutResponse createPaymentIntent(OrderRequest request) throws Exception {
     	
     	
 
@@ -89,21 +101,18 @@ public class CheckoutService {
         
 
         // 4️⃣ Create Stripe PaymentIntent
-        PaymentIntent paymentIntent = stripePaymentService.createPaymentIntent(
-        	    amount, 
-        	    currency, 
-        	    guestId
-        	);
-
-        // 5️⃣ Save Payment record (CREATED)
-        Payment payment = new Payment();
-        payment.setGateway("STRIPE");
-        payment.setTransactionId(paymentIntent.getId());
-        payment.setStatus("CREATED");
-        payment.setAmount(totalAmount);
-        payment.setCreatedAt(LocalDateTime.now());
-
-        Payment savedPayment = paymentRepo.save(payment);    
+//        PaymentIntent paymentIntent = stripePaymentService.createPaymentIntent(
+//        	    amount, 
+//        	    currency, 
+//        	    guestId
+//        	);
+        
+        com.razorpay.Order razorpayOrder = razorpayPaymentService.createRazorpayOrder(
+                amountInPaise, 
+                request.getCurrency(), 
+                request.getGuestId().toString()
+        );
+        
         
         Order order = new Order();
         order.setGuestId(request.getGuestId());
@@ -112,21 +121,63 @@ public class CheckoutService {
         order.setName(request.getName());
         order.setPhone(request.getPhone());
         order.setTrackingKey(Utility.generateTrackingKey());
+        order.setStatus("CREATED");
         
-        order.setPayment(savedPayment);
+        Order savedOrder = orderRepo.save(order);
         
-        orderRepo.save(order);
+        Payment payment = new Payment();
+        payment.setGateway("RAZORPAY");
+        payment.setTransactionId(razorpayOrder.get("id")); 
+        payment.setStatus("CREATED");
+        payment.setAmount(totalAmount);
+        payment.setCreatedAt(LocalDateTime.now());
         
+        payment.setOrder(savedOrder);
         
+        Payment savedPayment = paymentRepo.save(payment);
         
+        savedOrder.setPayment(savedPayment);
         
-        
+        orderRepo.save(savedOrder);
 
+        // 5️⃣ Save Payment record (CREATED)
+//        Payment payment = new Payment();
+//        payment.setGateway("RAZORPAY");
+//        String rzpId = razorpayOrder.get("id"); 
+//        payment.setTransactionId(rzpId);
+//        payment.setTransactionId(razorpayOrder.getId());
+//        payment.setTransactionId(razorpayOrder.get("id"));
+//        payment.setStatus("CREATED");
+//        payment.setAmount(totalAmount);
+//        payment.setCreatedAt(LocalDateTime.now());
+
+//        Payment savedPayment = paymentRepo.save(payment);    
+        
+//        Order order = new Order();
+//        order.setGuestId(request.getGuestId());
+//        order.setAddress(request.getAddress()); 
+//        order.setEmail(request.getEmail());
+//        order.setName(request.getName());
+//        order.setPhone(request.getPhone());
+//        order.setTrackingKey(Utility.generateTrackingKey());
+        
+        
+        
+        
+       
         // 6️⃣ Response
+//        CheckoutResponse response = new CheckoutResponse();
+//        response.setClientSecret(paymentIntent.getClientSecret());
+//        response.setAmount(amountInPaise);
+//
+//        return response;
         CheckoutResponse response = new CheckoutResponse();
-        response.setClientSecret(paymentIntent.getClientSecret());
+        response.setRazorpayOrderId(razorpayOrder.get("id").toString());
         response.setAmount(amountInPaise);
-
+        response.setKeyId(this.keyId); // Frontend needs this to open the UI
         return response;
     }
+    
+    
+    
 }

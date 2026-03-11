@@ -24,15 +24,15 @@ public class CheckoutController {
     
     
 
-    @PostMapping("/create-payment-intent")
-    public ResponseEntity<?> checkout(@RequestBody CheckoutRequest request) {
-        try {
-            CheckoutResponse response = checkoutService.createPaymentIntent(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+//    @PostMapping("/create-payment-intent")
+//    public ResponseEntity<?> checkout(@RequestBody CheckoutRequest request) {
+//        try {
+//            CheckoutResponse response = checkoutService.createPaymentIntent(request);
+//            return ResponseEntity.ok(response);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
     
     
 }

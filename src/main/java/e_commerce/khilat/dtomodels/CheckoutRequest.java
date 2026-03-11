@@ -5,6 +5,7 @@ import java.util.UUID;
 public class CheckoutRequest {
 
 	private UUID guestId;
+	
 	private String currency; // "inr"
 
 	private String name;

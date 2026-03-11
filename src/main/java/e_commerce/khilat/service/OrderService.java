@@ -95,20 +95,26 @@ public class OrderService {
 
 	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
 	@Transactional
-	public void createOrderAfterPayment(PaymentIntent intent) {
+	public void createOrderAfterPayment(String razorpayOrderId) {
 		// 1. Get Payment record from DB to update its status later
-		Payment payment = paymentRepository.findByTransactionId(intent.getId())
+		
+		Payment payment = paymentRepository.findByTransactionId(razorpayOrderId)
 				.orElseThrow(() -> new RuntimeException("Payment record not found"));
 
 		if ("SUCCESS".equals(payment.getStatus()))
 			return;
 
-		// 2. GET GUEST ID FROM STRIPE (Not from Payment table)
-		String guestIdStr = intent.getMetadata().get("guestId");
-		if (guestIdStr == null) {
-			throw new RuntimeException("Guest ID missing from Stripe Metadata");
-		}
-		UUID guestId = UUID.fromString(guestIdStr);
+//		// 2. GET GUEST ID FROM STRIPE (Not from Payment table)
+//		String guestIdStr = intent.getMetadata().get("guestId");
+		
+//		if (guestIdStr == null) {
+//			throw new RuntimeException("Guest ID missing from Stripe Metadata");
+//		}
+		
+		Order order = orderRepository.findByPaymentId(payment.getId())
+	            .orElseThrow(() -> new RuntimeException("Order record not found for payment"));
+		
+		UUID guestId = order.getGuestId();
 
 		// 3. Find Cart
 		Cart cart = cartRepository.findByGuestId(guestId)
@@ -116,8 +122,8 @@ public class OrderService {
 
 		List<CartItem> cartItems = cartItemRepository.findByCart(cart);
 
-		Order order = orderRepository.findByPaymentId(payment.getId())
-				.orElseThrow(() -> new RuntimeException("Payment record not found"));
+//		Order order = orderRepository.findByPaymentId(payment.getId())
+//				.orElseThrow(() -> new RuntimeException("Payment record not found"));
 
 		String trckngKey = order.getTrackingKey();
 
@@ -404,7 +410,9 @@ public class OrderService {
 		OrderTrackingResponseDto response = new OrderTrackingResponseDto();
 		
 		response.setStatus(order.getStatus());
-//		response.setTrackingKey(order.getTrackingKey());
+		response.setName(order.getName());
+		response.setEmail(order.getEmail());
+
 		
 		return response;
 	
