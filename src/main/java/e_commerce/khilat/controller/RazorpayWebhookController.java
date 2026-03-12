@@ -29,28 +29,53 @@ public class RazorpayWebhookController {
     public ResponseEntity<String> handleWebhook(@RequestBody String payload,
                                                 @RequestHeader("X-Razorpay-Signature") String signature) {
         try {
-            // Verify Signature
-            boolean isValid = true;
-//            		Utils.verifyWebhookSignature(payload, signature, webhookSecret);
-//            if (!isValid) return ResponseEntity.badRequest().body("Invalid Signature");
 
+        	
+        	Utils.verifyWebhookSignature(payload, signature, webhookSecret);
+        	
             JSONObject json = new JSONObject(payload);
             String event = json.getString("event");
-            JSONObject paymentEntity = json.getJSONObject("payload")
-                                           .getJSONObject("payment")
-                                           .getJSONObject("entity");
             
-            String razorpayOrderId = paymentEntity.getString("order_id");
+            System.out.println("RAZORPAY EVENT = " + event);
 
             if ("order.paid".equals(event)) {
-                orderService.createOrderAfterPayment(razorpayOrderId);
-            } else if ("refund.processed".equals(event)) {
-                orderService.updatePaymentStatusToRefunded(razorpayOrderId);
+
+                JSONObject paymentEntity = json.getJSONObject("payload")
+                        .getJSONObject("payment")
+                        .getJSONObject("entity");
+                
+                
+                
+
+                String razorpayOrderId = paymentEntity.getString("order_id");
+                String paymentId = paymentEntity.getString("id");
+                
+                if(orderService.isOrderAlreadyCreated(paymentId)){
+                    System.out.println("Order already processed for " + razorpayOrderId);
+                    return ResponseEntity.ok("Already processed");
+                }
+
+                orderService.createOrderAfterPayment(razorpayOrderId, paymentId);
+                
+                
+
+            }
+
+            else if ("refund.processed".equals(event)) {
+            	System.out.println("RAZORPAY EVENT = " + event);
+                JSONObject refundEntity = json.getJSONObject("payload")
+                        .getJSONObject("refund")
+                        .getJSONObject("entity");
+
+                String paymentId = refundEntity.getString("payment_id");
+
+                orderService.updatePaymentStatusToRefunded(paymentId);
             }
 
             return ResponseEntity.ok("Ok");
+
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Error");
         }
     }

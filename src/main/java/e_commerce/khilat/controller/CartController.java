@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import e_commerce.khilat.dtomodels.AddToCartRequest;
 import e_commerce.khilat.dtomodels.CartItemResponseDTO;
 import e_commerce.khilat.entity.CartItem;
 import e_commerce.khilat.entity.User;
+import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.service.CartService;
 import e_commerce.khilat.service.UserService;
 
@@ -34,6 +36,10 @@ public class CartController {
 	
 	@Autowired
 	private  UserService userService;
+	
+    @Autowired 
+    private CartItemRepo cartItemRepository;
+
 
 	
 	// 1. Add item to cart
@@ -67,6 +73,14 @@ public class CartController {
     	cartservice.decreaseQuantity(cartItemId);
         return ResponseEntity.ok("Quantity decreased");
     }
+    
+    @DeleteMapping("/item/{cartItemId}")
+    public ResponseEntity<String> deleteItem(@PathVariable Long cartItemId) {
+    	cartItemRepository.deleteById(cartItemId);
+        return ResponseEntity.ok("Item removed from cart");
+    }
+    
+    
     
    
     

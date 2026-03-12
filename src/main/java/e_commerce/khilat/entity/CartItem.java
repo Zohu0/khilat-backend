@@ -22,6 +22,21 @@ public class CartItem {
     private Integer quantity;
 
     private BigDecimal price;
+    
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+    
+    
+    
+
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
 
 	public Long getId() {
 		return id;

@@ -13,7 +13,7 @@ public class Order {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "guest_id", nullable = false, unique = true)
+	@Column(name = "guest_id", nullable = false)
 	private UUID guestId;
 
 	private String email;

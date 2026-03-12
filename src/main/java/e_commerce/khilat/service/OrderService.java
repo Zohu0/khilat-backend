@@ -12,20 +12,24 @@ import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
 
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.stripe.model.Refund;
-import com.stripe.param.RefundCreateParams;
-
-import com.stripe.model.PaymentIntent;
+//import com.razorpay.RazorpayClient;
+import com.razorpay.Refund;
+import com.razorpay.RazorpayException;
+import com.razorpay.RazorpayClient;
 
 import e_commerce.khilat.entity.Cart;
 import e_commerce.khilat.entity.CartItem;
@@ -46,6 +50,7 @@ import e_commerce.khilat.util.CommonConstant;
 import e_commerce.khilat.util.DateUtil;
 import e_commerce.khilat.util.EmailHandler;
 import jakarta.transaction.Transactional;
+import e_commerce.khilat.admin.AdminOrderController;
 import e_commerce.khilat.dtomodels.CancelOrderDto;
 import e_commerce.khilat.dtomodels.OrderDto;
 import e_commerce.khilat.dtomodels.OrderItemDto;
@@ -61,6 +66,9 @@ import org.springframework.mail.SimpleMailMessage; // Iski bhi zaroorat padegi
 
 @Service
 public class OrderService {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AdminOrderController.class);
+
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -88,32 +96,38 @@ public class OrderService {
 	private ProductVariantRepo productVariantRepo;
 
 	@Autowired
+	private RazorpayClient razorpayClient;
+
+	@Autowired
 	private OrderItemRepo orderItemRepo;
 
 	@Autowired
 	private EmailHandler emailHandler;
 
-	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
+	@CacheEvict(value = { "orders", "orderDetail" }, allEntries = true)
 	@Transactional
-	public void createOrderAfterPayment(String razorpayOrderId) {
+	public void createOrderAfterPayment(String razorpayOrderId, String paymentId) {
 		// 1. Get Payment record from DB to update its status later
+
+		LOGGER.info("Searching for transactionId {}",razorpayOrderId);
 		
 		Payment payment = paymentRepository.findByTransactionId(razorpayOrderId)
-				.orElseThrow(() -> new RuntimeException("Payment record not found"));
+				
+				.orElseThrow(() -> new RuntimeException("Payment record not found: "+ razorpayOrderId));
 
 		if ("SUCCESS".equals(payment.getStatus()))
 			return;
 
 //		// 2. GET GUEST ID FROM STRIPE (Not from Payment table)
 //		String guestIdStr = intent.getMetadata().get("guestId");
-		
+
 //		if (guestIdStr == null) {
 //			throw new RuntimeException("Guest ID missing from Stripe Metadata");
 //		}
-		
+
 		Order order = orderRepository.findByPaymentId(payment.getId())
-	            .orElseThrow(() -> new RuntimeException("Order record not found for payment"));
-		
+				.orElseThrow(() -> new RuntimeException("Order record not found for payment"));
+
 		UUID guestId = order.getGuestId();
 
 		// 3. Find Cart
@@ -167,6 +181,7 @@ public class OrderService {
 
 		// 6. Finalize Payment in DB
 		payment.setOrder(order); // Now you link them!
+		payment.setTransactionId(paymentId);
 		payment.setStatus(CommonConstant.SUCCESS);
 		paymentRepository.save(payment);
 
@@ -182,7 +197,6 @@ public class OrderService {
 		cartRepository.delete(cart);
 	}
 
-	
 	@Cacheable(value = "orderDetail", key = "#orderId")
 	public OrderDto getOrderDetail(Long orderId) {
 
@@ -197,8 +211,6 @@ public class OrderService {
 		response.setPhone(order.getPhone());
 		response.setStatus(order.getStatus());
 		response.setTrackingKey(order.getTrackingKey());
-		
-		
 
 		Payment payment = order.getPayment();
 
@@ -260,25 +272,20 @@ public class OrderService {
 		Page<Order> ordersPage;
 
 		if (date != null && trckngKey != null && !trckngKey.isEmpty()) {
-	        // status + date + trackingKey
-	        ordersPage = orderRepository.findByStatusAndUpdatedDtOfOpsAndTrackingKey(status, date, trckngKey, pageable);
-	    }
-	    else if (trckngKey != null && !trckngKey.isEmpty()) {
-	        // status + trackingKey
-	        ordersPage = orderRepository.findByStatusAndTrackingKey(status, trckngKey, pageable);
-	    }
-	    else if (date != null) {
-	        // status + date
-	        ordersPage = orderRepository.findByStatusAndUpdatedDtOfOps(status, date, pageable);
-	    }
-	    else {
-	        // status only
-	        ordersPage = orderRepository.findByStatus(status, pageable);
-	    }
-
+			// status + date + trackingKey
+			ordersPage = orderRepository.findByStatusAndUpdatedDtOfOpsAndTrackingKey(status, date, trckngKey, pageable);
+		} else if (trckngKey != null && !trckngKey.isEmpty()) {
+			// status + trackingKey
+			ordersPage = orderRepository.findByStatusAndTrackingKey(status, trckngKey, pageable);
+		} else if (date != null) {
+			// status + date
+			ordersPage = orderRepository.findByStatusAndUpdatedDtOfOps(status, date, pageable);
+		} else {
+			// status only
+			ordersPage = orderRepository.findByStatus(status, pageable);
+		}
 
 		List<OrderSummaryDto> dtoList = new ArrayList<>();
-
 
 		// 2. Simple for-each loop instead of .map()
 		for (Order order : ordersPage) {
@@ -303,23 +310,26 @@ public class OrderService {
 
 	}
 
-	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
+	@CacheEvict(value = { "orders", "orderDetail" }, allEntries = true)
 	public String cancelOrderService(CancelOrderDto request) {
+
 		// 1. First, Update and COMMIT the status to CANCELLED
-		// Using TransactionTemplate forces this to finish and save completely
 		Boolean updateSuccess = transactionTemplate.execute(status -> {
+
 			Order order = orderRepository.findByTrackingKey(request.getTrckngKey())
 					.orElseThrow(() -> new RuntimeException("Order Id not found"));
 
-			// Validate status - NO try/catch here!
-	        if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
-	            throw new OrderProcessingException("Order is " + order.getStatus() + " and cannot be cancelled.");
-	        }
+			// Validate status
+			if (!order.getStatus().equalsIgnoreCase(CommonConstant.PENDING)) {
+				throw new OrderProcessingException("Order is " + order.getStatus() + " and cannot be cancelled.");
+			}
 
 			order.setStatus(CommonConstant.CANCELLED);
 			order.setUpdatedAt(LocalDateTime.now());
 			order.setUpdatedDtOfOps(DateUtil.dateConverterToLong(order.getUpdatedAt()));
+
 			orderRepository.save(order);
+
 			return true;
 		});
 
@@ -327,31 +337,39 @@ public class OrderService {
 			return "Order cannot be cancelled.";
 		}
 
-		// 2. NOW that the DB is 100% committed as CANCELLED, call Stripe
+		// 2. NOW that DB is committed as CANCELLED → call Razorpay refund
 		try {
-			Order order = orderRepository.findByTrackingKey(request.getTrckngKey()).get();
 
-			RefundCreateParams params = RefundCreateParams.builder()
-					.setPaymentIntent(order.getPayment().getTransactionId()).build();
+			Order order = orderRepository.findByTrackingKey(request.getTrckngKey())
+					.orElseThrow(() -> new RuntimeException("Order not found"));
 
-			Refund refund = Refund.create(params);
+			BigDecimal amount = order.getPayment().getAmount().multiply(BigDecimal.valueOf(100));
+
+			JSONObject refundRequest = new JSONObject();
+			refundRequest.put("amount", amount.longValue());
+
+			Refund refund = razorpayClient.payments.refund(order.getPayment().getTransactionId());
+			System.out.println("Refund Id: " + refund.get("id"));
 			emailHandler.sendCancelEmail(request.getEmail(), request.getName(), request.getTrckngKey());
 
 			return "Your Order Has Been Cancelled. Refund initiated.";
 
 		} catch (Exception e) {
-			// NOTE: If Stripe fails here, you might want to revert the status to PENDING
-			// or log it for manual intervention, as the CANCELLED status is already
-			// committed.
+
 			throw new RuntimeException("Refund failed: " + e.getMessage());
+			
 		}
 	}
 
-	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
+	@CacheEvict(value = { "orders", "orderDetail" }, allEntries = true)
 	@Transactional
 	public void updatePaymentStatusToRefunded(String transactionId) {
 		Payment payment = paymentRepository.findByTransactionId(transactionId)
 				.orElseThrow(() -> new RuntimeException("Payment not found"));
+		
+		if(CommonConstant.REFUNDED.equals(payment.getStatus())){
+		    return;
+		}
 
 		payment.setStatus(CommonConstant.REFUNDED);
 
@@ -367,7 +385,7 @@ public class OrderService {
 		}
 	}
 
-	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
+	@CacheEvict(value = { "orders", "orderDetail" }, allEntries = true)
 	@Transactional
 	public void markOrderAsDispatched(Long orderId) {
 		// 1. Order ko DB se find karein
@@ -384,7 +402,7 @@ public class OrderService {
 		emailHandler.sendDispatchEmail(order.getEmail(), order.getName(), order.getTrackingKey());
 	}
 
-	@CacheEvict(value = {"orders", "orderDetail"}, allEntries = true)
+	@CacheEvict(value = { "orders", "orderDetail" }, allEntries = true)
 	@Transactional
 	public void markOrderAsDelivered(Long orderId) {
 
@@ -402,20 +420,24 @@ public class OrderService {
 
 		emailHandler.sendDeliveredEmail(order.getEmail(), order.getName(), order.getTrackingKey());
 	}
-	
+
 	public OrderTrackingResponseDto getOrderUpdate(String trackingKey) {
-		
-		Order order = orderRepository.findByTrackingKey(trackingKey) .orElseThrow(() ->new RuntimeException("order not found with key:"+trackingKey));
-			
+
+		Order order = orderRepository.findByTrackingKey(trackingKey)
+				.orElseThrow(() -> new RuntimeException("order not found with key:" + trackingKey));
+
 		OrderTrackingResponseDto response = new OrderTrackingResponseDto();
-		
+
 		response.setStatus(order.getStatus());
 		response.setName(order.getName());
 		response.setEmail(order.getEmail());
 
-		
 		return response;
-	
+
 	}
 	
+	public boolean isOrderAlreadyCreated(String razorpayPmtIdea){
+	    return paymentRepository.existsByTransactionId(razorpayPmtIdea);
+	}
+
 }

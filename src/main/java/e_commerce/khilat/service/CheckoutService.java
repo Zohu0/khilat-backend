@@ -19,12 +19,16 @@ import e_commerce.khilat.dtomodels.OrderRequest;
 import e_commerce.khilat.entity.Cart;
 import e_commerce.khilat.entity.CartItem;
 import e_commerce.khilat.entity.Order;
+import e_commerce.khilat.entity.OrderItem;
 import e_commerce.khilat.entity.Payment;
 import e_commerce.khilat.repository.CartItemRepo;
 import e_commerce.khilat.repository.CartRepo;
+import e_commerce.khilat.repository.OrderItemRepo;
 import e_commerce.khilat.repository.OrderRepo;
 import e_commerce.khilat.repository.PaymentRepo;
+import e_commerce.khilat.util.CommonConstant;
 import e_commerce.khilat.util.Utility;
+import jakarta.transaction.Transactional;
 
 @Service
 public class CheckoutService {
@@ -46,6 +50,8 @@ public class CheckoutService {
     private final StripePaymentService stripePaymentService;
     
     private final OrderRepo orderRepo;
+    
+    private final OrderItemRepo orderItemRepo;
 
     @Autowired							
     private RazorpayPaymentService razorpayPaymentService;
@@ -55,6 +61,7 @@ public class CheckoutService {
             CartItemRepo cartItemRepo,
             PaymentRepo paymentRepo,
             OrderRepo orderRepo,
+            OrderItemRepo orderItemRepo,
         StripePaymentService stripePaymentService) {
 
         this.cartRepo = cartRepo;
@@ -62,12 +69,14 @@ public class CheckoutService {
         this.paymentRepo = paymentRepo;
         this.stripePaymentService = stripePaymentService;
         this.orderRepo =  orderRepo;
+        this.orderItemRepo = orderItemRepo;
         
     }
     
     
     
     @CacheEvict(value = {"orders", "payments"}, allEntries = true)
+    @Transactional
     public CheckoutResponse createPaymentIntent(OrderRequest request) throws Exception {
     	
     	
@@ -121,9 +130,18 @@ public class CheckoutService {
         order.setName(request.getName());
         order.setPhone(request.getPhone());
         order.setTrackingKey(Utility.generateTrackingKey());
-        order.setStatus("CREATED");
+        order.setStatus(CommonConstant.CREATED);
         
         Order savedOrder = orderRepo.save(order);
+        
+        for (CartItem cartItem : cartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(savedOrder);
+            orderItem.setVariant(cartItem.getVariant());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getPrice());
+            orderItemRepo.save(orderItem); // Ensure you have orderItemRepo injected
+        }
         
         Payment payment = new Payment();
         payment.setGateway("RAZORPAY");

@@ -35,17 +35,15 @@ import e_commerce.khilat.service.OrderService;
 @CrossOrigin
 public class OrderController {
 	
-	@Value("${razorpay.key.id}")
-    private String keyId;
-	
-	@Value("${razorpay.key.secret}")
-    private String keySecret;
 	
 	@Autowired
 	private OrderService orderService;
 	
 	@Autowired
 	private CheckoutService checkoutService;
+	
+	@Autowired
+	private RazorpayClient razorpayClient;
 	
 	
 	@PostMapping(value = "/cancel-order")
@@ -76,35 +74,48 @@ public class OrderController {
 		
 	}
 	
+//	@PostMapping("/create-guestorder")
+//	public ResponseEntity<CheckoutResponse> createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
+//        try {
+//
+//            // 1. Prepare the Order Request
+//            JSONObject orderOptions = new JSONObject();
+//            orderOptions.put("amount", orderRequest.getAmount() * 100); // Convert to Paise
+//            orderOptions.put("currency", "INR");
+//            orderOptions.put("receipt", "txn_" + System.currentTimeMillis());
+//
+//            // 3. Create Order in Razorpay System
+//            Order order = razorpayClient.orders.create(orderOptions);
+//            
+//            CheckoutResponse chekoutResponse = checkoutService.createPaymentIntent(orderRequest);
+//            
+//            
+//            
+//
+//            // 4. (Optional) Save the order_id in your DB as 'PENDING' here
+//            // String rzpOrderId = order.get("id");
+//
+//            // 5. Return the Order details to Frontend
+//            return ResponseEntity.ok(chekoutResponse);
+//            
+//        } catch (RazorpayException e) {
+//        	
+//        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();        }
+//    }
+	
 	@PostMapping("/create-guestorder")
-	public ResponseEntity<CheckoutResponse> createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
-        try {
-            // 1. Initialize Razorpay Client
-            RazorpayClient razorpay = new RazorpayClient(keyId, keySecret);
-
-            // 2. Prepare the Order Request
-            JSONObject orderOptions = new JSONObject();
-            orderOptions.put("amount", orderRequest.getAmount() * 100); // Convert to Paise
-            orderOptions.put("currency", "INR");
-            orderOptions.put("receipt", "txn_" + System.currentTimeMillis());
-
-            // 3. Create Order in Razorpay System
-            Order order = razorpay.orders.create(orderOptions);
-            
-            CheckoutResponse chkoutResponse = checkoutService.createPaymentIntent(orderRequest);
-            
-            
-            
-
-            // 4. (Optional) Save the order_id in your DB as 'PENDING' here
-            // String rzpOrderId = order.get("id");
-
-            // 5. Return the Order details to Frontend
-            return ResponseEntity.ok(chkoutResponse);
-            
-        } catch (RazorpayException e) {
-        	
-        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();        }
-    }
+	public ResponseEntity<CheckoutResponse> createOrder(@RequestBody OrderRequest orderRequest) {
+	    try {
+	        // We removed the redundant Razorpay order creation here.
+	        // The service now handles all logic: Razorpay API, DB Order, and DB Payment.
+	        CheckoutResponse checkoutResponse = checkoutService.createPaymentIntent(orderRequest);
+	        
+	        return ResponseEntity.ok(checkoutResponse);
+	    } catch (Exception e) {
+	        // Log the error for debugging
+	        e.printStackTrace(); 
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
+	}
 
 }

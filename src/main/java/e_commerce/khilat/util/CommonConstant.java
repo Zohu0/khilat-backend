@@ -11,6 +11,7 @@ public class CommonConstant {
 	public static final String ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 	public static final String DISPATCHED = "DISPATCHED";
 	public static final String DELIVERED = "DELIVERED";
+	public static final String CREATED = "CREATED";
 
 	public static final SecureRandom RANDOM = new SecureRandom();
 
