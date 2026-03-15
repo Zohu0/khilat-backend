@@ -1,5 +1,9 @@
 {
   "build": {
-    "secrets": []
+    "secrets": [],
+    "aptPkgs": []
+  },
+  "deploy": {
+    "startCommand": "java -Dserver.port=$PORT $JAVA_OPTS -jar target/*.jar"
   }
 }

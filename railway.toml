@@ -1,5 +1,6 @@
 [build]
 builder = "RAILPACK"
+buildCommand = "./mvnw -B -DskipTests clean install -Pproduction"
 
 [deploy]
 startCommand = "java -Dserver.port=$PORT $JAVA_OPTS -jar target/*.jar"
