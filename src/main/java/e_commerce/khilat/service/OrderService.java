@@ -26,6 +26,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 //import com.razorpay.RazorpayClient;
 import com.razorpay.Refund;
 import com.razorpay.RazorpayException;
@@ -190,7 +193,15 @@ public class OrderService {
 		String guestEmail = order.getEmail();
 		String guestName = order.getName();
 
-		emailHandler.sendEmailtoGuest(guestEmail, guestName, trckngKey);
+		
+//		emailHandler.sendEmailtoGuest(guestEmail, guestName, trckngKey);
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+	        @Override
+	        public void afterCommit() {
+	            // This ONLY runs if the Database successfully saves everything
+	            emailHandler.sendEmailtoGuest(guestEmail, guestName, trckngKey);
+	        }
+	    });
 
 		// 7. Cleanup
 		cartItemRepository.deleteAll(cartItems);
