@@ -73,7 +73,7 @@ public class OrderService {
 
 
 	// application.properties se username uthane ke liye
-	@Value("${spring.mail.username}")
+//	@Value("${spring.mail.username}")
 //	private String fromEmail;
 
 	@Autowired
