@@ -197,8 +197,7 @@ public class EmailHandler {
     @Value("${resend.api.key}")
     private String resendApiKey;
 
-    private static final String FROM_EMAIL = "Khilat Store <onboarding@resend.dev>";
-    // 👆 Use this until you verify your own domain on Resend
+    private static final String FROM_EMAIL = "Khilat Store <no-reply@khilat.in>";    // 👆 Use this until you verify your own domain on Resend
     // After domain verification, replace with: "Khilat Store <no-reply@yourdomain.com>"
 
 
