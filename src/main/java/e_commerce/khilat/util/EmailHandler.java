@@ -185,6 +185,8 @@ import com.resend.*;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
 
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -200,6 +202,12 @@ public class EmailHandler {
     // After domain verification, replace with: "Khilat Store <no-reply@yourdomain.com>"
 
 
+    
+    @PostConstruct
+    public void debugEnv() {
+        System.out.println("ENV RESEND_API_KEY: " + System.getenv("RESEND_API_KEY"));
+        System.out.println("PROPERTY resend.api.key: " + resendApiKey);
+    }
     // ─── Order Placed ─────────────────────────────────────────────
     @Async
     public void sendEmailtoGuest(String guestEmail, String guestName, String trckngKey) {
