@@ -22,6 +22,11 @@ public class EmailHandler {
 	
 	@Async
 	public void sendEmailtoGuest(String guestEmail, String guestName, String trckngKey) {
+		
+		System.out.println("📨 sendEmailtoGuest method called");
+	    System.out.println("Email: " + guestEmail);
+	    System.out.println("Name: " + guestName);
+	    System.out.println("Tracking Key: " + trckngKey);
 		try {
 			SimpleMailMessage message = new SimpleMailMessage();
 
@@ -33,10 +38,14 @@ public class EmailHandler {
 					+ " ,\n\n" + CommonConstant.ORDER_PLACED;
 			message.setText(emailContent);
 
+	        System.out.println("📤 Attempting to send email...");
+
 			mailSender.send(message);
+			
+	        System.out.println("✅ Email sent successfully!");
 		} catch (Exception e) {
-			System.err.println("Error sending email: " + e.getMessage());
-		}
+			System.err.println("❌ Error sending email:");
+			e.printStackTrace();		}
 	}
 
 	@Async
