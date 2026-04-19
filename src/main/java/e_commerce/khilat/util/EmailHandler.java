@@ -203,11 +203,11 @@ public class EmailHandler {
 
 
     
-    @PostConstruct
-    public void debugEnv() {
-        System.out.println("ENV RESEND_API_KEY: " + System.getenv("RESEND_API_KEY"));
-        System.out.println("PROPERTY resend.api.key: " + resendApiKey);
-    }
+//    @PostConstruct
+//    public void debugEnv() {
+//        System.out.println("ENV RESEND_API_KEY: " + System.getenv("RESEND_API_KEY"));
+//        System.out.println("PROPERTY resend.api.key: " + resendApiKey);
+//    }
     // ─── Order Placed ─────────────────────────────────────────────
     @Async
     public void sendEmailtoGuest(String guestEmail, String guestName, String trckngKey) {
@@ -221,8 +221,11 @@ public class EmailHandler {
         String html = "<h2>Hi " + displayName + "! 🎉</h2>"
                 + "<p>Your order has been placed successfully.</p>"
                 + "<p><strong>Order ID:</strong> " + trckngKey + "</p>"
-                + "<p>" + CommonConstant.ORDER_PLACED + "</p>"
-                + "<br><p>Thanks for shopping with <strong>Khilat Store</strong>!</p>";
+                + "<p>Aapka order successfully place ho gaya hai! ✅</p>"
+                + "<p>Humne aapka payment receive kar liya hai aur hum jald hi aapka order dispatch karenge.</p>"
+                + "<br>"
+                + "<p>Thank you for shopping with Khilat!</p>"
+                + "<p><strong>Best Regards,</strong><br>Khilat Team</p>";
 
         System.out.println("📧 Preparing to send email to: " + guestEmail);
         System.out.println("📝 Subject: Order Confirmation - Khilat Store 🎉");
@@ -239,11 +242,13 @@ public class EmailHandler {
         System.out.println("📨 sendDispatchEmail called for: " + guestEmail);
 
         String displayName = (guestName != null) ? guestName : "Customer";
-        String text = String.format(CommonConstant.ORDER_DISPATCH_EMAIL_TEMPLATE, displayName, trckngKey);
 
         String html = "<h2>Great News, " + displayName + "! 🚚</h2>"
-                + "<p>Your order <strong>#" + trckngKey + "</strong> has been dispatched.</p>"
-                + "<p>" + text.replace("\n", "<br>") + "</p>";
+                + "<p>Your order <strong>#" + trckngKey + "</strong> has been dispatched and is currently in transit. 📦</p>"
+                + "<p>You will receive it shortly.</p>"
+                + "<br>"
+                + "<p>Thank you for shopping with Khilat!</p>"
+                + "<p><strong>Best Regards,</strong><br>Team Khilat</p>";
 
         sendEmail(guestEmail, "Your Order #" + trckngKey + " is Dispatched 🚚", html);
     }
@@ -255,11 +260,13 @@ public class EmailHandler {
         System.out.println("📨 sendCancelEmail called for: " + email);
 
         String displayName = (name != null) ? name : "Customer";
-        String text = String.format(CommonConstant.ORDER_CANCELLED_EMAIL_TEMPLATE, displayName, trckngKey);
 
         String html = "<h2>Hi " + displayName + ",</h2>"
-                + "<p>Your cancellation request for order <strong>#" + trckngKey + "</strong> has been processed.</p>"
-                + "<p>" + text.replace("\n", "<br>") + "</p>";
+                + "<p>Your cancellation request for order <strong>#" + trckngKey + "</strong> has been successfully processed. ❌</p>"
+                + "<p>If any payment was processed, the refund will be initiated and should reflect in your account within <strong>5-7 business days</strong>.</p>"
+                + "<br>"
+                + "<p>We're sorry it didn't work out this time, but we hope to see you again soon!</p>"
+                + "<p><strong>Best Regards,</strong><br>Team Khilat</p>";
 
         sendEmail(email, "Order #" + trckngKey + " Cancellation Update", html);
     }
@@ -271,12 +278,14 @@ public class EmailHandler {
         System.out.println("📨 sendDeliveredEmail called for: " + guestEmail);
 
         String displayName = (guestName != null) ? guestName : "Customer";
-        String text = String.format(CommonConstant.ORDER_DELIVERED_EMAIL_TEMPLATE, displayName, trckngKey);
 
-        String html = "<h2>Your order is Delivered, " + displayName + "! 🎁</h2>"
-                + "<p>Order <strong>#" + trckngKey + "</strong> has been delivered successfully.</p>"
-                + "<p>" + text.replace("\n", "<br>") + "</p>"
-                + "<br><p>Hope you love your purchase! 😊</p>";
+        String html = "<h2>Your Order is Delivered, " + displayName + "! 🎁</h2>"
+                + "<p>Great news! Your order <strong>#" + trckngKey + "</strong> has been delivered successfully. 🏁</p>"
+                + "<p>We hope you love your new purchase from Khilat!</p>"
+                + "<p>If you have any questions or feedback, feel free to reach out to us.</p>"
+                + "<br>"
+                + "<p>Thank you for being our valued customer! 😊</p>"
+                + "<p><strong>Best Regards,</strong><br>Team Khilat</p>";
 
         sendEmail(guestEmail, "Your Order #" + trckngKey + " is Delivered 🎁", html);
     }
