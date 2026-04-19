@@ -74,7 +74,7 @@ public class OrderService {
 
 	// application.properties se username uthane ke liye
 	@Value("${spring.mail.username}")
-	private String fromEmail;
+//	private String fromEmail;
 
 	@Autowired
 	private PaymentRepo paymentRepository;
