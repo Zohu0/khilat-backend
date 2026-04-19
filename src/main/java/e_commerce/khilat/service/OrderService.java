@@ -64,7 +64,6 @@ import e_commerce.khilat.dtomodels.ProductSummaryDto;
 
 import org.springframework.data.domain.Pageable;
 
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage; // Iski bhi zaroorat padegi
 
 @Service
@@ -72,9 +71,6 @@ public class OrderService {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AdminOrderController.class);
 
-
-	@Autowired
-	private JavaMailSender mailSender;
 
 	// application.properties se username uthane ke liye
 	@Value("${spring.mail.username}")
