@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 public class ProductService {
@@ -64,7 +65,7 @@ public class ProductService {
 		return productRepo.findLatestProducts(pageable);
 	}
 
-	@Cacheable(value = "productDetail", key = "#id")
+//	@Cacheable(value = "productDetail", key = "#id")
 	public ProductRequest getProductById(Long id) {
 
 		Product product = productRepo.findById(id)
@@ -229,5 +230,7 @@ public class ProductService {
 		// Case 2: filters applied
 		return productRepo.filterProducts(keyword, category, minPrice, maxPrice, pageable);
 	}
-
+	
 }
+
+
