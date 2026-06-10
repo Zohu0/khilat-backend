@@ -197,8 +197,10 @@ public class EmailHandler {
     @Value("${resend.api.key}")
     private String resendApiKey;
 
-    private static final String FROM_EMAIL = "Khilat Store <no-reply@khilat.in>";    // 👆 Use this until you verify your own domain on Resend
-    // After domain verification, replace with: "Khilat Store <no-reply@yourdomain.com>"
+//    private static final String FROM_EMAIL = "Khilat Store <no-reply@khilat.in>";    // 👆 Use this until you verify your own domain on Resend
+//    // After domain verification, replace with: "Khilat Store <no-reply@yourdomain.com>"
+    
+    private static final String FROM_EMAIL = "onboarding@resend.dev";
 
 
     
@@ -210,6 +212,7 @@ public class EmailHandler {
     // ─── Order Placed ─────────────────────────────────────────────
     @Async
     public void sendEmailtoGuest(String guestEmail, String guestName, String trckngKey) {
+    	
         System.out.println("📨 sendEmailtoGuest called for: " + guestEmail);
         System.out.println("👤 Guest Name: " + guestName);
         System.out.println("🔑 Tracking Key: " + trckngKey);
